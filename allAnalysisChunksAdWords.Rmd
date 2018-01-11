@@ -1,0 +1,122 @@
+---
+title: "[CLIENT NAME] AdWords Performance"
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    number_sections: true
+    theme: lumen
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+# Libraries
+library(RAdwords)
+library(lubridate)
+library(ggplot2)
+library(tidyverse)
+
+# Variables
+googleAuth <- doAuth()
+customerId <- Sys.getenv("CLIENT1ID")
+
+# Dates
+yesterday = today() - days(1)
+startOfCurrentMonth = today() - day(today()) + 1
+endOfLastMonth = startOfMonth - 1 
+starOfLastMonth = endOfLastMonth - days_in_month(endOfLastMonth) + 1
+```
+# Campaign performance
+## Performance: Month-to-date
+
+```{r campaign scatterplot 1, echo=FALSE}
+
+chunk1_body <- statement(select=c('CampaignName','Conversions','CostPerConversion','Cost'),
+                         report="CAMPAIGN_PERFORMANCE_REPORT",
+                         where="Cost > 150000000",
+                         start=startOfCurrentMonth,
+                         end=yesterday)
+
+chunk1_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk1_body)
+
+names(chunk1_data) <- c("Campaign", "Conversions", "CPA", "Cost")
+
+plot <- ggplot(chunk1_data, aes(x = Cost, y = CPA, size = Conversions)) +
+    geom_point() +
+    geom_text(aes(label = Campaign))
+
+plot
+
+```
+
+## Performance: Last 30 days
+
+```{r campaign scatterplot 2, echo=FALSE}
+
+thirtyDaysAgo <- today() - days(30)
+
+chunk2_body <- statement(select=c('CampaignName','Conversions','CostPerConversion','Cost'),
+                         report="CAMPAIGN_PERFORMANCE_REPORT",
+                         where="Cost > 150000000",
+                         start=thirtyDaysAgo,
+                         end=yesterday)
+
+chunk2_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk2_body)
+
+names(chunk2_data) <- c("Campaign", "Conversions", "CPA", "Cost")
+
+plot <- ggplot(chunk2_data, aes(x = Cost, y = CPA, size = Conversions)) +
+    geom_point() +
+    geom_text(aes(label = Campaign))
+
+plot
+
+```
+
+## Performance: Last 60 days
+
+```{r campaign scatterplot 3, echo=FALSE}
+
+sixtyDaysAgo <- today() - days(60)
+
+chunk3_body <- statement(select=c('CampaignName','Conversions','CostPerConversion','Cost'),
+                         report="CAMPAIGN_PERFORMANCE_REPORT",
+                         where="Cost > 150000000",
+                         start=sixtyDaysAgo,
+                         end=yesterday)
+
+chunk3_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk3_body)
+
+names(chunk3_data) <- c("Campaign", "Conversions", "CPA", "Cost")
+
+plot <- ggplot(chunk3_data, aes(x = Cost, y = CPA, size = Conversions)) +
+    geom_point() +
+    geom_text(aes(label = Campaign))
+
+plot
+
+```
+
+## Performance: Last 90 days
+
+```{r campaign scatterplot 4, echo=FALSE}
+
+ninetyDaysAgo <- today() - days(90)
+
+chunk4_body <- statement(select=c('CampaignName','Conversions','CostPerConversion','Cost'),
+                         report="CAMPAIGN_PERFORMANCE_REPORT",
+                         where="Cost > 150000000",
+                         start=ninetyDaysAgo,
+                         end=yesterday)
+
+chunk4_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk4_body)
+
+names(chunk4_data) <- c("Campaign", "Conversions", "CPA", "Cost")
+
+plot <- ggplot(chunk4_data, aes(x = Cost, y = CPA, size = Conversions)) +
+    geom_point() +
+    geom_text(aes(label = Campaign))
+
+plot
+
+```

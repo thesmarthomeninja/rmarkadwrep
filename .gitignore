@@ -31,3 +31,18 @@ vignettes/*.pdf
 # Temporary files created by R markdown
 *.utf8.md
 *.knit.md
+
+# Renviron for storing API keys and login data
+.Renviron
+.Renviron~
+.Renviron#
+
+# Emacs temp buffer files
+*.Rmd#
+*.Rmd~
+
+#Google auth
+.google.auth.RData
+
+#Ignore figures directory
+figure/
