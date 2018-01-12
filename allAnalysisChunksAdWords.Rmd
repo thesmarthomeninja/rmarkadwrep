@@ -5,8 +5,6 @@ output:
     toc: true
     toc_depth: 2
     number_sections: true
-    theme: lumen
-    highlight: tango
 ---
 
 ```{r setup, include=FALSE}
@@ -15,6 +13,7 @@ library(RAdwords)
 library(lubridate)
 library(ggplot2)
 library(tidyverse)
+library(corrplot)
 
 # Variables
 googleAuth <- doAuth()
@@ -23,13 +22,13 @@ customerId <- Sys.getenv("CLIENT1ID")
 # Dates
 yesterday = today() - days(1)
 startOfCurrentMonth = today() - day(today()) + 1
-endOfLastMonth = startOfMonth - 1 
+endOfLastMonth = startOfCurrentMonth - 1 
 starOfLastMonth = endOfLastMonth - days_in_month(endOfLastMonth) + 1
 ```
 # Campaign performance
 ## Performance: Month-to-date
 
-```{r campaign scatterplot 1, echo=FALSE}
+```{r campaign scatterplot 1, echo=FALSE, eval=FALSE}
 
 chunk1_body <- statement(select=c('CampaignName','Conversions','CostPerConversion','Cost'),
                          report="CAMPAIGN_PERFORMANCE_REPORT",
@@ -51,7 +50,7 @@ plot
 
 ## Performance: Last 30 days
 
-```{r campaign scatterplot 2, echo=FALSE}
+```{r campaign scatterplot 2, echo=FALSE, eval=FALSE}
 
 thirtyDaysAgo <- today() - days(30)
 
@@ -75,7 +74,7 @@ plot
 
 ## Performance: Last 60 days
 
-```{r campaign scatterplot 3, echo=FALSE}
+```{r campaign scatterplot 3, echo=FALSE, eval=FALSE}
 
 sixtyDaysAgo <- today() - days(60)
 
@@ -99,7 +98,7 @@ plot
 
 ## Performance: Last 90 days
 
-```{r campaign scatterplot 4, echo=FALSE}
+```{r campaign scatterplot 4, echo=FALSE, eval=FALSE}
 
 ninetyDaysAgo <- today() - days(90)
 
@@ -120,3 +119,24 @@ plot <- ggplot(chunk4_data, aes(x = Cost, y = CPA, size = Conversions)) +
 plot
 
 ```
+
+# Metrics correlation plot
+
+```{r correlation plot, echo=FALSE}
+
+aYearAgo <- today() - days(365)
+
+chunk5_body <- statement(select=c('Date','Clicks','Conversions','CostPerConversion',
+                                  'Cost','ConversionRate','AverageCpc','Impressions','Ctr'),
+                         report="ACCOUNT_PERFORMANCE_REPORT",
+                         start=aYearAgo,
+                         end=yesterday)
+
+chunk5_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk5_body)
+
+corr <- cor(chunk5_data[,-1])
+
+corrplot(corr, method = "pie", type = "upper")
+
+```
+
