@@ -14,6 +14,7 @@ library(lubridate)
 library(ggplot2)
 library(tidyverse)
 library(corrplot)
+library(scales)
 
 # Variables
 googleAuth <- doAuth()
@@ -40,11 +41,9 @@ chunk1_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, stat
 
 names(chunk1_data) <- c("Campaign", "Conversions", "CPA", "Cost")
 
-plot <- ggplot(chunk1_data, aes(x = Cost, y = CPA, size = Conversions)) +
+ggplot(chunk1_data, aes(x = Cost, y = CPA, size = Conversions)) +
     geom_point() +
     geom_text(aes(label = Campaign))
-
-plot
 
 ```
 
@@ -64,11 +63,9 @@ chunk2_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, stat
 
 names(chunk2_data) <- c("Campaign", "Conversions", "CPA", "Cost")
 
-plot <- ggplot(chunk2_data, aes(x = Cost, y = CPA, size = Conversions)) +
+ggplot(chunk2_data, aes(x = Cost, y = CPA, size = Conversions)) +
     geom_point() +
     geom_text(aes(label = Campaign))
-
-plot
 
 ```
 
@@ -88,17 +85,15 @@ chunk3_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, stat
 
 names(chunk3_data) <- c("Campaign", "Conversions", "CPA", "Cost")
 
-plot <- ggplot(chunk3_data, aes(x = Cost, y = CPA, size = Conversions)) +
+ggplot(chunk3_data, aes(x = Cost, y = CPA, size = Conversions)) +
     geom_point() +
     geom_text(aes(label = Campaign))
-
-plot
 
 ```
 
 ## Performance: Last 90 days
 
-```{r campaign scatterplot 4, echo=FALSE, eval=FALSE}
+```{r campaign scatterplot 4, echo=FALSE, eval=FALSE, eval=FALSE}
 
 ninetyDaysAgo <- today() - days(90)
 
@@ -112,17 +107,15 @@ chunk4_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, stat
 
 names(chunk4_data) <- c("Campaign", "Conversions", "CPA", "Cost")
 
-plot <- ggplot(chunk4_data, aes(x = Cost, y = CPA, size = Conversions)) +
+ ggplot(chunk4_data, aes(x = Cost, y = CPA, size = Conversions)) +
     geom_point() +
     geom_text(aes(label = Campaign))
-
-plot
 
 ```
 
 # Metrics correlation plot
 
-```{r correlation plot, echo=FALSE}
+```{r correlation plot, echo=FALSE, eval=FALSE}
 
 aYearAgo <- today() - days(365)
 
@@ -138,5 +131,55 @@ corr <- cor(chunk5_data[,-1])
 
 corrplot(corr, method = "pie", type = "upper")
 
+```		
+# Ad Scheduling Heatmaps
+
+## Ad Scheduling: Impressions
+
+```{r ad scheduling heatmap 1, echo=FALSE, eval=FALSE}
+
+ninetyDaysAgo <- today() - days(90)
+
+chunk6_body <- statement(select=c("DayOfWeek","HourOfDay","Impressions","Conversions","CostPerConversion","SearchImpressionShare"),
+                         report="ACCOUNT_PERFORMANCE_REPORT",
+                         start=ninetyDaysAgo,
+                         end=yesterday)
+
+chunk6_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk6_body)
+
+names(chunk6_data) <- c("DayOfWeek", "HourOfDay", "Impressions", "Conversions","CPA","SearchIS")
+
+chunk6_data$HourOfDay <- factor(chunk6_data$HourOfDay, levels=c(0:23))
+chunk6_data$DayOfWeek <- factor(chunk6_data$DayOfWeek, levels=c("Sunday","Saturday","Friday","Thursday","Wednesday","Tuesday","Monday"))
+
+ggplot(chunk6_data, aes(x=HourOfDay, y=DayOfWeek, z=Impressions)) + geom_tile(aes(fill = Impressions)) +
+    scale_fill_gradient(low="white", high="blue", labels=comma)
+
 ```
 
+## Ad Scheduling: Search Impression Share
+
+```{r ad scheduling heatmap 2, echo=FALSE, eval=FALSE}
+
+ggplot(chunk6_data, aes(x=HourOfDay, y=DayOfWeek, z=SearchIS)) + geom_tile(aes(fill = SearchIS)) +
+    scale_fill_gradient2(low="white", high="blue", labels=comma, midpoint=0.5)
+
+```
+
+## Ad Scheduling: Conversions
+
+```{r ad scheduling heatmap 3, echo=FALSE, eval=FALSE}
+
+ggplot(chunk6_data, aes(x=HourOfDay, y=DayOfWeek, z=Conversions)) + geom_tile(aes(fill = Conversions)) +
+    scale_fill_gradient(low="white", high="blue", labels=comma)
+
+```
+
+## Ad Scheduling: CPA
+
+```{r ad scheduling heatmap 4, echo=FALSE, eval=FALSE}
+
+ggplot(chunk6_data[chunk6_data$CPA > 0,], aes(x=HourOfDay, y=DayOfWeek, z=CPA)) + geom_tile(aes(fill = CPA)) +
+    scale_fill_gradient2(low="white", high="blue", labels=comma, midpoint=50)
+
+```

@@ -25,6 +25,23 @@ output:
 
 
 
-## Metrics correlation plot
+# Metrics correlation plot
+
+
+# Ad Scheduling Heatmaps
+
+## Ad Scheduling: Impressions
+
+
+
+## Ad Scheduling: Search Impression Share
+
+
+
+## Ad Scheduling: Conversions
+
+
+
+## Ad Scheduling: CPA
 
 
