@@ -15,6 +15,8 @@ library(ggplot2)
 library(tidyverse)
 library(corrplot)
 library(scales)
+library(tidytext)
+library(cowplot)
 
 # Variables
 googleAuth <- doAuth()
@@ -181,5 +183,157 @@ ggplot(chunk6_data, aes(x=HourOfDay, y=DayOfWeek, z=Conversions)) + geom_tile(ae
 
 ggplot(chunk6_data[chunk6_data$CPA > 0,], aes(x=HourOfDay, y=DayOfWeek, z=CPA)) + geom_tile(aes(fill = CPA)) +
     scale_fill_gradient2(low="white", high="blue", labels=comma, midpoint=50)
+
+```
+
+# Search Terms N-Grams
+
+```{r tidy search terms, echo=FALSE, eval=FALSE}
+
+ninetyDaysAgo <- today() - days(90)
+data(stop_words)
+
+chunk7_body <- statement(select=c("Query","Clicks","Impressions","Conversions","Cost"),
+                         report="SEARCH_QUERY_PERFORMANCE_REPORT",
+                         start=ninetyDaysAgo,
+                         end=yesterday)
+
+chunk7_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk7_body)
+
+unigrams <- chunk7_data %>% unnest_tokens(word, Searchterm) %>% anti_join(stop_words) %>%
+    group_by(word) %>%
+    summarize(Clicks=sum(Clicks), Impressions=sum(Impressions), Conversions=sum(Conversions), Cost=sum(Cost),
+              Ctr=sum(Clicks)/sum(Impressions), ConversionRate=sum(Conversions)/sum(Clicks), Cpa=sum(Cost)/sum(Conversions),
+              AvgCpc = sum(Cost)/sum(Clicks))
+
+bigrams <- chunk7_data %>% unnest_tokens(bigram, Searchterm, token="ngrams", n=2) %>% group_by(bigram) %>%
+    summarize(Clicks=sum(Clicks), Impressions=sum(Impressions), Conversions=sum(Conversions),
+              Cost=sum(Cost), Ctr=sum(Clicks)/sum(Impressions), ConversionRate=sum(Conversions)/sum(Clicks),
+              Cpa=sum(Cost)/sum(Conversions), AvgCpc = sum(Cost)/sum(Clicks))
+
+trigrams <- chunk7_data %>% unnest_tokens(trigram, Searchterm, token="ngrams", n=3) %>% group_by(trigram) %>%
+    summarize(Clicks=sum(Clicks), Impressions=sum(Impressions), Conversions=sum(Conversions),
+              Cost=sum(Cost), Ctr=sum(Clicks)/sum(Impressions), ConversionRate=sum(Conversions)/sum(Clicks),
+              Cpa=sum(Cost)/sum(Conversions), AvgCpc = sum(Cost)/sum(Clicks))
+
+```
+
+## Unigrams
+
+```{r unigrams, echo=FALSE, eval=FALSE}
+
+pu_imp <- unigrams %>% top_n(10, Impressions) %>% ggplot(aes(y=Impressions, x=reorder(word, Impressions))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+pu_clicks <- unigrams %>% top_n(10, Clicks) %>% ggplot(aes(y=Clicks, x=reorder(word, Clicks))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+pu_ctr <- unigrams %>% filter(Clicks > 100) %>% top_n(10, Ctr) %>% ggplot(aes(y=Ctr, x=reorder(word, Ctr))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+pu_cpc <- unigrams %>% filter(Clicks > 100) %>% top_n(10, AvgCpc) %>% ggplot(aes(y=AvgCpc, x=reorder(word, AvgCpc))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+pu_cost <- unigrams %>% top_n(10, Cost) %>% ggplot(aes(y=Cost, x=reorder(word, Cost))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+pu_conv <- unigrams %>% top_n(10, Conversions) %>% ggplot(aes(y=Conversions, x=reorder(word, Conversions))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+pu_cpa <- unigrams %>% filter(Conversions > 1) %>% top_n(10, Cpa) %>% ggplot(aes(y=Cpa, x=reorder(word, Cpa))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+pu_cr <- unigrams %>% filter(Conversions > 1) %>% top_n(10, ConversionRate) %>% ggplot(aes(y=ConversionRate, x=reorder(word, ConversionRate))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+plot_grid(pu_imp, pu_clicks, pu_ctr, pu_cpc, pu_cost, pu_conv, pu_cpa, pu_cr, ncol=2)
+
+```
+
+## Bigrams
+
+```{r bigrams, echo=FALSE, eval=FALSE}
+
+pb_imp <- bigrams %>% top_n(10, Impressions) %>% ggplot(aes(y=Impressions, x=reorder(bigram, Impressions))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+pb_clicks <- bigrams %>% top_n(10, Clicks) %>% ggplot(aes(y=Clicks, x=reorder(bigram, Clicks))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+pb_ctr <- bigrams %>% filter(Clicks > 100) %>% top_n(10, Ctr) %>% ggplot(aes(y=Ctr, x=reorder(bigram, Ctr))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+pb_cpc <- bigrams %>% filter(Clicks > 100) %>% top_n(10, AvgCpc) %>% ggplot(aes(y=AvgCpc, x=reorder(bigram, AvgCpc))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+pb_cost <- bigrams %>% top_n(10, Cost) %>% ggplot(aes(y=Cost, x=reorder(bigram, Cost))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+pb_conv <- bigrams %>% top_n(10, Conversions) %>% ggplot(aes(y=Conversions, x=reorder(bigram, Conversions))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+pb_cpa <- bigrams %>% filter(Conversions > 1) %>% top_n(10, Cpa) %>% ggplot(aes(y=Cpa, x=reorder(bigram, Cpa))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+pb_cr <- bigrams %>% filter(Conversions > 1) %>% top_n(10, ConversionRate) %>% ggplot(aes(y=ConversionRate, x=reorder(bigram, ConversionRate))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+plot_grid(pb_imp, pb_clicks, pb_ctr, pb_cpc, pb_cost, pb_conv, pb_cpa, pb_cr, ncol=2)
+
+```
+
+## Trigrams
+
+```{r trigrams, echo=FALSE, eval=FALSE}
+
+pt_imp <- trigrams %>% top_n(10, Impressions) %>% ggplot(aes(y=Impressions, x=reorder(trigram, Impressions))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+pt_clicks <- trigrams %>% top_n(10, Clicks) %>% ggplot(aes(y=Clicks, x=reorder(trigram, Clicks))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+pt_ctr <- trigrams %>% filter(Clicks > 100) %>% top_n(10, Ctr) %>% ggplot(aes(y=Ctr, x=reorder(trigram, Ctr))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+pt_cpc <- trigrams %>% filter(Clicks > 100) %>% top_n(10, AvgCpc) %>% ggplot(aes(y=AvgCpc, x=reorder(trigram, AvgCpc))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+pt_cost <- trigrams %>% top_n(10, Cost) %>% ggplot(aes(y=Cost, x=reorder(trigram, Cost))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+pt_conv <- trigrams %>% top_n(10, Conversions) %>% ggplot(aes(y=Conversions, x=reorder(trigram, Conversions))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+pt_cpa <- trigrams %>% filter(Conversions > 1) %>% top_n(10, Cpa) %>% ggplot(aes(y=Cpa, x=reorder(trigram, Cpa))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+pt_cr <- trigrams %>% filter(Conversions > 1) %>% top_n(10, ConversionRate) %>% ggplot(aes(y=ConversionRate, x=reorder(trigram, ConversionRate))) +
+    geom_bar(stat = "identity") +
+    coord_flip()
+
+plot_grid(pt_imp, pt_clicks, pt_ctr, pt_cpc, pt_cost, pt_conv, pt_cpa, pt_cr, ncol=2)
 
 ```
