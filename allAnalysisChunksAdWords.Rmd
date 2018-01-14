@@ -337,3 +337,27 @@ pt_cr <- trigrams %>% filter(Conversions > 1) %>% top_n(10, ConversionRate) %>% 
 plot_grid(pt_imp, pt_clicks, pt_ctr, pt_cpc, pt_cost, pt_conv, pt_cpa, pt_cr, ncol=2)
 
 ```
+
+# Impression Share analysis
+
+```{r impression share, echo=FALSE, eval=FALSE}
+
+ninetyDaysAgo <- today() - days(90)
+
+chunk8_body <- statement(select=c("Date","AverageCpc","SearchRankLostImpressionShare","SearchBudgetLostImpressionShare",
+                                  "SearchExactMatchImpressionShare","SearchImpressionShare"),
+                         report="ACCOUNT_PERFORMANCE_REPORT",
+                         start=ninetyDaysAgo,
+                         end=yesterday)
+
+chunk8_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk8_body)
+
+names(chunk8_data) <- c("Day","CPC","ISLostToRank","ISLostToBudget","ExactMatchIS","IS")
+
+long_chunk8 <- gather(chunk8_data, metric, value, CPC:IS)
+
+ggplot(long_chunk8, aes(x = Day, y = value)) +
+    geom_line() +
+    facet_wrap(~metric, ncol=1)
+
+```

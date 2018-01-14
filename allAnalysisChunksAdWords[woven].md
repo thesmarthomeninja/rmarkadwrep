@@ -49,10 +49,19 @@ output:
 # Search Terms N-Grams
 
 
-```
-## Joining, by = "word"
-```
 
 ## Unigrams
 
-![plot of chunk unigrams](figure/unigrams-1.png)![plot of chunk unigrams](figure/unigrams-2.png)![plot of chunk unigrams](figure/unigrams-3.png)![plot of chunk unigrams](figure/unigrams-4.png)![plot of chunk unigrams](figure/unigrams-5.png)![plot of chunk unigrams](figure/unigrams-6.png)![plot of chunk unigrams](figure/unigrams-7.png)![plot of chunk unigrams](figure/unigrams-8.png)
+
+
+## Bigrams
+
+
+
+## Trigrams
+
+
+
+# Impression Share analysis
+
+![plot of chunk impression share](figure/impression share-1.svg)
