@@ -64,4 +64,18 @@ output:
 
 # Impression Share analysis
 
-![plot of chunk impression share](figure/impression share-1.svg)
+
+
+# Metrics pacing vs targets
+
+
+```
+##   Conversions     Cost
+## 3         227 13498.07
+```
+
+```
+## Error in FUN(X[[i]], ...): object 'CPA' not found
+```
+
+![plot of chunk metrics pacing](figure/metrics pacing-1.png)

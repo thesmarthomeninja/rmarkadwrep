@@ -21,6 +21,8 @@ library(cowplot)
 # Variables
 googleAuth <- doAuth()
 customerId <- Sys.getenv("CLIENT1ID")
+availableBudget <- 30000
+targetConversions <- 300
 
 # Dates
 yesterday = today() - days(1)
@@ -359,5 +361,33 @@ long_chunk8 <- gather(chunk8_data, metric, value, CPC:IS)
 ggplot(long_chunk8, aes(x = Day, y = value)) +
     geom_line() +
     facet_wrap(~metric, ncol=1)
+
+```
+
+# Metrics pacing vs targets
+
+```{r metrics pacing, echo=FALSE, eval=FALSE}
+
+chunk9_body <- statement(select=c('Conversions','Cost'),
+                         report="ACCOUNT_PERFORMANCE_REPORT",
+                         start=startOfCurrentMonth,
+                         end=yesterday)
+
+chunk9_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk9_body)
+
+paceConv <- (targetConversions/days_in_month(today())) * day(yesterday)
+paceCost <- (availableBudget/days_in_month(today())) * day(yesterday)
+
+allStats <- data.frame(stat = c("target","pace","current"),
+                       conversions = c(targetConversions, paceConv, chunk9_data$Conversions),
+                       cost = c(availableBudget, paceCost, chunk9_data$Cost))
+
+ggplot(data = allStats, aes(x = "", y = conversions, fill = stat)) +
+    geom_bar(stat = "identity", position = "dodge", width = 0.2) +
+    coord_flip()
+
+ggplot(data = allStats, aes(x = "", y = cost, fill = stat)) +
+    geom_bar(stat = "identity", position = "dodge", width = 0.2) +
+    coord_flip()
 
 ```
