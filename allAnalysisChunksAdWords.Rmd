@@ -358,9 +358,15 @@ names(chunk8_data) <- c("Day","CPC","ISLostToRank","ISLostToBudget","ExactMatchI
 
 long_chunk8 <- gather(chunk8_data, metric, value, CPC:IS)
 
-ggplot(long_chunk8, aes(x = Day, y = value)) +
+long_IS <- long_chunk8 %>% filter(metric %in% c("IS","ISLostToBudget","ISLostToRank"))
+long_other <- long_chunk8 %>% filter(metric %in% c("CPC","ExactMatchIS"))
+
+ggplot(long_other, aes(x = Day, y = value)) +
     geom_line() +
     facet_wrap(~metric, ncol=1)
+
+ggplot(long_IS) +
+    geom_area(aes(x = Day, y = value, fill = metric), position = "stack")
 
 ```
 
