@@ -397,3 +397,25 @@ ggplot(data = allStats, aes(x = "", y = cost, fill = stat)) +
     coord_flip()
 
 ```
+
+# Device performance
+
+```{r device performance, echo=FALSE, eval=FALSE}
+
+ninetyDaysAgo <- today() - days(90)
+
+chunk10_body <- statement(select=c('Date','Device','Conversions','CostPerConversion',
+                                  'ConversionRate','AverageCpc','Impressions','Ctr'),
+                         report="ACCOUNT_PERFORMANCE_REPORT",
+                         start=ninetyDaysAgo,
+                         end=yesterday)
+
+chunk10_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk10_body)
+
+long_chunk10 <- chunk10_data %>% gather(metric, value, Conversions:CTR)
+
+long_chunk10 %>% ggplot(aes(x = Day, y = value, color = Device)) +
+    geom_line() +
+    facet_grid(metric ~ ., scales = "free_y")
+
+```
