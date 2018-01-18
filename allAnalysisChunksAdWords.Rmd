@@ -17,6 +17,7 @@ library(corrplot)
 library(scales)
 library(tidytext)
 library(cowplot)
+library(httr)
 
 # Variables
 googleAuth <- doAuth()
@@ -417,5 +418,36 @@ long_chunk10 <- chunk10_data %>% gather(metric, value, Conversions:CTR)
 long_chunk10 %>% ggplot(aes(x = Day, y = value, color = Device)) +
     geom_line() +
     facet_grid(metric ~ ., scales = "free_y")
+
+```
+
+```{r 404 checker, echo=FALSE, eval=FALSE}
+
+ninetyDaysAgo <- today() - days(90)
+
+chunk11_body <- statement(select=c('EffectiveFinalUrl'),
+                         report="FINAL_URL_REPORT",
+                         where="Impressions > 0",
+                         start=ninetyDaysAgo,
+                         end=yesterday)
+
+chunk11_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk11_body)
+
+responseCodes <- character()
+
+for(i in chunk11_data$FinalURL){
+    url <- as.character(i)
+    response <- GET(i)
+    Sys.sleep(sample(1:5, 1))
+    responseCodes <- c(responseCodes, response$status_code)
+}
+
+responseCodes <- data.frame(ResponseCode = responseCodes)
+
+problemURLs <- cbind(chunk11_data, responseCodes) %>% filter(responseCodes != 200)
+
+if(nrow(problemURLs) == 0){
+    message("All Final URLs are ok.")
+}else{ problemURLs }
 
 ```

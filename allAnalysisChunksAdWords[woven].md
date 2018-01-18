@@ -69,3 +69,16 @@ output:
 # Metrics pacing vs targets
 
 
+
+# Device performance
+
+
+
+
+```
+## Warning in Ops.factor(left, right): '>' not meaningful for factors
+```
+
+```
+## All Final URLs are ok.
+```
