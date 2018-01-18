@@ -329,6 +329,8 @@ $(document).ready(function () {
 <li><a href="#impression-share-analysis"><span class="toc-section-number">5</span> Impression Share analysis</a></li>
 <li><a href="#metrics-pacing-vs-targets"><span class="toc-section-number">6</span> Metrics pacing vs targets</a></li>
 <li><a href="#device-performance"><span class="toc-section-number">7</span> Device performance</a></li>
+<li><a href="#checker"><span class="toc-section-number">8</span> 404 Checker</a></li>
+<li><a href="#quality-score-analysis"><span class="toc-section-number">9</span> Quality Score analysis</a></li>
 </ul>
 </div>
 
@@ -385,7 +387,42 @@ $(document).ready(function () {
 </section>
 <section id="device-performance" class="level1">
 <h1><span class="header-section-number">7</span> Device performance</h1>
-<pre><code>## All Final URLs are ok.</code></pre>
+</section>
+<section id="checker" class="level1">
+<h1><span class="header-section-number">8</span> 404 Checker</h1>
+</section>
+<section id="quality-score-analysis" class="level1">
+<h1><span class="header-section-number">9</span> Quality Score analysis</h1>
+<pre><code>## # A tibble: 3 x 3
+##   Adrelevance       n   freq
+##   &lt;chr&gt;         &lt;int&gt;  &lt;dbl&gt;
+## 1 Below average   195 0.600 
+## 2 Above average   111 0.342 
+## 3 Average          19 0.0585</code></pre>
+<pre><code>## # A tibble: 3 x 3
+##   Landingpageexperience     n   freq
+##   &lt;chr&gt;                 &lt;int&gt;  &lt;dbl&gt;
+## 1 Above average           275 0.846 
+## 2 Average                  45 0.138 
+## 3 Below average             5 0.0154</code></pre>
+<pre><code>## # A tibble: 3 x 3
+##   Expectedclickthroughrate     n  freq
+##   &lt;chr&gt;                    &lt;int&gt; &lt;dbl&gt;
+## 1 Above average              124 0.382
+## 2 Average                    101 0.311
+## 3 Below average              100 0.308</code></pre>
+<pre><code>## # A tibble: 9 x 3
+##   Qualityscore     n    freq
+##   &lt;chr&gt;        &lt;int&gt;   &lt;dbl&gt;
+## 1 5               69 0.212  
+## 2 10              66 0.203  
+## 3 8               66 0.203  
+## 4 6               59 0.182  
+## 5 3               26 0.0800 
+## 6 7               17 0.0523 
+## 7 9               17 0.0523 
+## 8 1                4 0.0123 
+## 9 4                1 0.00308</code></pre>
 </section>
 
 

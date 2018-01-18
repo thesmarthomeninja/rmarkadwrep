@@ -421,6 +421,8 @@ long_chunk10 %>% ggplot(aes(x = Day, y = value, color = Device)) +
 
 ```
 
+# 404 Checker
+
 ```{r 404 checker, echo=FALSE, eval=FALSE}
 
 ninetyDaysAgo <- today() - days(90)
@@ -451,3 +453,24 @@ if(nrow(problemURLs) == 0){
 }else{ problemURLs }
 
 ```
+
+# Quality Score analysis
+
+```{r quality score analysis, echo=FALSE}
+
+ninetyDaysAgo <- today() - days(90)
+
+chunk12_body <- statement(select=c("Date","Criteria","HasQualityScore","CreativeQualityScore","PostClickQualityScore","SearchPredictedCtr","QualityScore"),
+                         report="KEYWORDS_PERFORMANCE_REPORT",
+                         where="HasQualityScore = TRUE",
+                         start=yesterday,
+                         end=yesterday)
+
+chunk12_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk12_body)
+
+chunk12_data %>% group_by(Adrelevance) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n))
+chunk12_data %>% group_by(Landingpageexperience) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n))
+chunk12_data %>% group_by(Expectedclickthroughrate) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n))
+chunk12_data %>% group_by(Qualityscore) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n))
+
+````
