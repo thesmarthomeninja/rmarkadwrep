@@ -456,9 +456,7 @@ if(nrow(problemURLs) == 0){
 
 # Quality Score analysis
 
-```{r quality score analysis, echo=FALSE}
-
-ninetyDaysAgo <- today() - days(90)
+```{r quality score analysis, echo=FALSE, eval=FALSE}
 
 chunk12_body <- statement(select=c("Date","Criteria","HasQualityScore","CreativeQualityScore","PostClickQualityScore","SearchPredictedCtr","QualityScore"),
                          report="KEYWORDS_PERFORMANCE_REPORT",
@@ -473,4 +471,30 @@ chunk12_data %>% group_by(Landingpageexperience) %>% summarize(n = n()) %>% muta
 chunk12_data %>% group_by(Expectedclickthroughrate) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n))
 chunk12_data %>% group_by(Qualityscore) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n))
 
-````
+```
+
+# Match type performance
+
+```{r match type performance, echo=FALSE}
+
+ninetyDaysAgo <- today() - days(90)
+
+chunk13_body <- statement(select=c("Date","KeywordMatchType","Impressions","Clicks","Cost","Conversions"),
+                         report="KEYWORDS_PERFORMANCE_REPORT",
+                         start=ninetyDaysAgo,
+                         end=yesterday)
+
+chunk13_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk13_body)
+names(chunk13_data) <- c("Date","MatchType","Impressions","Clicks","Cost","Conversions")
+
+chunk13_data <- chunk13_data %>% group_by(Date, MatchType) %>%
+    summarize(Impressions = sum(Impressions), Clicks = sum(Clicks), Cost = sum(Cost),Conversions = sum(Conversions)) %>%
+    mutate(Ctr = Clicks/Impressions, CPC = Cost/Clicks, CPA = Cost/Conversions, ConversionRate = Conversions/Clicks)
+
+chunk13_long <- gather(chunk13_data, metric, value, Impressions:ConversionRate)
+
+ggplot(chunk13_long, aes(y = value, x = Date, color = MatchType)) +
+    geom_line() +
+    facet_grid(metric ~ ., scales = "free_y")
+
+```
