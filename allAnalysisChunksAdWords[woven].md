@@ -84,4 +84,8 @@ output:
 
 # Match type performance
 
+![plot of chunk match type performance](figure/match type performance-1.png)
+
+# Ad/Keyword Performance
+
 

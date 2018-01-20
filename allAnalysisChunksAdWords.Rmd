@@ -18,6 +18,7 @@ library(scales)
 library(tidytext)
 library(cowplot)
 library(httr)
+library(plotly)
 
 # Variables
 googleAuth <- doAuth()
@@ -475,7 +476,7 @@ chunk12_data %>% group_by(Qualityscore) %>% summarize(n = n()) %>% mutate(freq =
 
 # Match type performance
 
-```{r match type performance, echo=FALSE}
+```{r match type performance, echo=FALSE, eval=FALSE}
 
 ninetyDaysAgo <- today() - days(90)
 
@@ -496,5 +497,29 @@ chunk13_long <- gather(chunk13_data, metric, value, Impressions:ConversionRate)
 ggplot(chunk13_long, aes(y = value, x = Date, color = MatchType)) +
     geom_line() +
     facet_grid(metric ~ ., scales = "free_y")
+
+```
+
+# Ad/Keyword Performance
+
+```{r adKeywords performance, echo=FALSE, eval=FALSE}
+
+ninetyDaysAgo <- today() - days(90)
+
+chunk14_body <- statement(select=c('CampaignName','AdGroupName','Id','Description','HeadlinePart2','CriterionId',
+                                   'Cost',"Conversions","CostPerConversion"),
+                         report="AD_PERFORMANCE_REPORT",
+                         where="Cost > 100000000 AND AdNetworkType1 = SEARCH",
+                         start=ninetyDaysAgo,
+                         end=yesterday)
+
+chunk14_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk14_body)
+
+names(chunk14_data) <- c("Campaign", "AdGroup", "AdId", "Description", "Headline2", "KeywordId",
+                         "Cost", "Conversions", "CPA")
+
+plot_ly(data = chunk14_data, x = ~Cost, y = ~CPA, size = ~Conversions,
+        text = ~paste("Campaign: ", Campaign, "<br>AdGroup: ", AdGroup, "<br>Headline2: ",
+                      Headline2, "<br>Description: ", Description ,"<br>KeywordId: ", KeywordId))
 
 ```
