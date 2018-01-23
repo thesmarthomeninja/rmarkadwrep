@@ -19,6 +19,7 @@ library(tidytext)
 library(cowplot)
 library(httr)
 library(plotly)
+library(ggrepel)
 
 # Variables
 googleAuth <- doAuth()
@@ -457,9 +458,10 @@ if(nrow(problemURLs) == 0){
 
 # Quality Score analysis
 
-```{r quality score analysis, echo=FALSE, eval=FALSE}
+```{r quality score analysis, echo=FALSE}
 
-chunk12_body <- statement(select=c("Date","Criteria","HasQualityScore","CreativeQualityScore","PostClickQualityScore","SearchPredictedCtr","QualityScore"),
+chunk12_body <- statement(select=c("Date","CampaignName","AdGroupName","Criteria","Impressions","HasQualityScore","CreativeQualityScore",
+                                   "PostClickQualityScore","SearchPredictedCtr","QualityScore"),
                          report="KEYWORDS_PERFORMANCE_REPORT",
                          where="HasQualityScore = TRUE",
                          start=yesterday,
@@ -471,6 +473,12 @@ chunk12_data %>% group_by(Adrelevance) %>% summarize(n = n()) %>% mutate(freq = 
 chunk12_data %>% group_by(Landingpageexperience) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n))
 chunk12_data %>% group_by(Expectedclickthroughrate) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n))
 chunk12_data %>% group_by(Qualityscore) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n))
+
+plot_data <- chunk12_data %>% mutate(QSImpr = as.numeric(Qualityscore) * Impressions) %>% group_by(Campaign, Adgroup) %>%
+    summarise(QSImpr = sum(QSImpr), Impressions = sum(Impressions)) %>% ungroup() %>% mutate(weightedQS = QSImpr/Impressions) 
+
+plot <- plot_data %>% ggplot(aes(x = weightedQS, y = 1)) + geom_text(aes(label = Adgroup),position = position_jitter(0.7), size = 1.5)
+ggplotly(plot)
 
 ```
 
@@ -519,7 +527,7 @@ names(chunk14_data) <- c("Campaign", "AdGroup", "AdId", "Description", "Headline
                          "Cost", "Conversions", "CPA")
 
 plot_ly(data = chunk14_data, x = ~Cost, y = ~CPA, size = ~Conversions,
-        text = ~paste("Campaign: ", Campaign, "<br>AdGroup: ", AdGroup, "<br>Headline2: ",
-                      Headline2, "<br>Description: ", Description ,"<br>KeywordId: ", KeywordId))
+            text = ~paste("Campaign: ", Campaign, "<br>AdGroup: ", AdGroup, "<br>Headline2: ",
+                            Headline2, "<br>Description: ", Description ,"<br>KeywordId: ", KeywordId))
 
 ```
