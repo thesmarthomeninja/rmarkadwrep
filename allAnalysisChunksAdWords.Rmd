@@ -19,7 +19,6 @@ library(tidytext)
 library(cowplot)
 library(httr)
 library(plotly)
-library(ggrepel)
 
 # Variables
 googleAuth <- doAuth()
@@ -458,7 +457,7 @@ if(nrow(problemURLs) == 0){
 
 # Quality Score analysis
 
-```{r quality score analysis, echo=FALSE}
+```{r quality score analysis, echo=FALSE, eval=FALSE}
 
 chunk12_body <- statement(select=c("Date","CampaignName","AdGroupName","Criteria","Impressions","HasQualityScore","CreativeQualityScore",
                                    "PostClickQualityScore","SearchPredictedCtr","QualityScore"),
@@ -530,4 +529,53 @@ plot_ly(data = chunk14_data, x = ~Cost, y = ~CPA, size = ~Conversions,
             text = ~paste("Campaign: ", Campaign, "<br>AdGroup: ", AdGroup, "<br>Headline2: ",
                             Headline2, "<br>Description: ", Description ,"<br>KeywordId: ", KeywordId))
 
+```
+
+# 3x3 Performance Segments
+
+```{r performance segments matrix, echo=FALSE, eval=FALSE}
+
+ninetyDaysAgo <- today() - days(90)
+
+chunk15_body <- statement(select=c("Criteria","CostPerConversion","Impressions","QualityScore",
+                                   "Cost","Conversions", "AveragePosition", "AverageCpc"),
+                         report="KEYWORDS_PERFORMANCE_REPORT",
+                         start=ninetyDaysAgo,
+                         end=yesterday)
+
+chunk15_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk15_body)
+names(chunk15_data) <- c("Keyword","CPA","Impressions","QS","Cost","Conversions","Position","CPC")
+```
+
+## Converters
+
+```{r converters matrix, echo=FALSE, eval=FALSE}
+
+hasConversions <- chunk15_data %>% filter(Conversions > 0)
+
+plot_ly(data = hasConversions, x = ~log(Conversions), y = ~CPA, color = ~Position, size = ~Position,
+        text = ~paste("Keyword: ", Keyword, "<br>Conversions: ", Conversions,
+                      "<br>CPA: ", CPA, "<br>Position: ", Position))
+```
+
+## Non-converters
+
+```{r non-converters matrix, echo=FALSE, eval=FALSE}
+
+notConverting <- chunk15_data %>% filter(Conversions == 0, Cost > 0)
+
+plot_ly(data = notConverting, x = ~log(Cost), y = ~CPC, color = ~Position, size = ~Position,
+        text = ~paste("Keyword: ", Keyword, "<br>Cost: ", Cost,
+                      "<br>CPC: ", CPC, "<br>Position: ", Position))
+```
+
+## Clickless
+
+```{r clickless matrix, echo=FALSE, eval=FALSE}
+
+clickless <- chunk15_data %>% filter(Cost == 0, Impressions > 0)
+
+plot_ly(data = clickless, x = ~log(Impressions), y = ~QS, color = ~Position, size = ~Position, type = 'scatter',
+        text = ~paste("Keyword: ", Keyword, "<br>Impressions: ", Impressions,
+                      "<br>QS: ", QS, "<br>Position: ", Position))
 ```
