@@ -19,6 +19,7 @@ library(tidytext)
 library(cowplot)
 library(httr)
 library(plotly)
+library(AnomalyDetection)
 
 # Variables
 googleAuth <- doAuth()
@@ -578,4 +579,48 @@ clickless <- chunk15_data %>% filter(Cost == 0, Impressions > 0)
 plot_ly(data = clickless, x = ~log(Impressions), y = ~QS, color = ~Position, size = ~Position, type = 'scatter',
         text = ~paste("Keyword: ", Keyword, "<br>Impressions: ", Impressions,
                       "<br>QS: ", QS, "<br>Position: ", Position))
+```
+
+# Anomaly detection
+
+```{r anomaly detection, echo=FALSE, eval=FALSE}
+
+ninetyDaysAgo <- today() - days(90)
+
+chunk16_body <- statement(select=c("Date","HourOfDay","Clicks","Conversions","CostPerConversion",
+                                   "AverageCpc","SearchImpressionShare", "AveragePosition"),
+                         report="ACCOUNT_PERFORMANCE_REPORT",
+                         start=ninetyDaysAgo,
+                         end=yesterday)
+
+chunk16_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk16_body)
+
+names(chunk16_data) <- c("Date","HourOfDay","Clicks","Conversions","CPA","CPC","SearchIS","Position")
+anomalyData <- chunk16_data %>% mutate(DateTime = ymd_hms(paste0(Date," ",HourOfDay,":00:00")))
+anomalyData <- anomalyData %>% arrange(DateTime)
+
+anomClicks <- AnomalyDetectionTs(anomalyData[,c("DateTime","Clicks")], direction='both',
+                                 plot=TRUE, e_value=TRUE, max_anoms=0.01, ylabel = "Clicks")
+anomClicks$plot
+
+anomConversions <- AnomalyDetectionTs(anomalyData[,c("DateTime","Conversions")], direction='both',
+                                 plot=TRUE, e_value=TRUE, max_anoms=0.01, ylabel = "Conversions")
+anomConversions$plot
+
+anomCPA <- AnomalyDetectionTs(anomalyData[,c("DateTime","CPA")], direction='both',
+                                 plot=TRUE, e_value=TRUE, max_anoms=0.01, ylabel = "CPA")
+anomCPA$plot
+
+anomCPC <- AnomalyDetectionTs(anomalyData[,c("DateTime","CPC")], direction='both',
+                                 plot=TRUE, e_value=TRUE, max_anoms=0.01, ylabel = "CPC")
+anomCPC$plot
+
+anomSearchIS <- AnomalyDetectionTs(anomalyData[,c("DateTime","SearchIS")], direction='both',
+                                 plot=TRUE, e_value=TRUE, max_anoms=0.01, ylabel = "SearchIS")
+anomSearchIS$plot
+
+anomPosition <- AnomalyDetectionTs(anomalyData[,c("DateTime","Position")], direction='both',
+                                 plot=TRUE, e_value=TRUE, max_anoms=0.01, ylabel = "Position")
+anomPosition$plot
+
 ```
