@@ -108,4 +108,8 @@ output:
 
 # Anomaly detection
 
-![plot of chunk anomaly detection](figure/anomaly detection-1.png)![plot of chunk anomaly detection](figure/anomaly detection-2.png)![plot of chunk anomaly detection](figure/anomaly detection-3.png)![plot of chunk anomaly detection](figure/anomaly detection-4.png)![plot of chunk anomaly detection](figure/anomaly detection-5.png)![plot of chunk anomaly detection](figure/anomaly detection-6.png)
+
+
+# Google Trends: Top 5 keywords
+
+![plot of chunk google trends](figure/google trends-1.png)

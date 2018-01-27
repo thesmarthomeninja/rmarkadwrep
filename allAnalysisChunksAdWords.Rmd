@@ -20,6 +20,7 @@ library(cowplot)
 library(httr)
 library(plotly)
 library(AnomalyDetection)
+library(gtrendsR)
 
 # Variables
 googleAuth <- doAuth()
@@ -622,5 +623,27 @@ anomSearchIS$plot
 anomPosition <- AnomalyDetectionTs(anomalyData[,c("DateTime","Position")], direction='both',
                                  plot=TRUE, e_value=TRUE, max_anoms=0.01, ylabel = "Position")
 anomPosition$plot
+
+```
+
+# Google Trends: Top 5 keywords
+
+```{r google trends, echo=FALSE}
+
+ninetyDaysAgo <- today() - days(90)
+
+chunk17_body <- statement(select=c("Criteria","Impressions","SearchImpressionShare"),
+                         report="KEYWORDS_PERFORMANCE_REPORT",
+                         start=ninetyDaysAgo,
+                         end=yesterday)
+
+chunk17_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk17_body)
+names(chunk17_data) <- c("Keyword","Impressions","SearchIS")
+
+lookupTerms <- chunk17_data %>% mutate(impVolume = Impressions / SearchIS) %>%
+    arrange(desc(impVolume)) %>% head(5) %>% select(Keyword)
+
+res <- gtrends(str_replace_all(lookupTerms[,1], "\\+",""), geo = "IE")
+plot(res)
 
 ```
