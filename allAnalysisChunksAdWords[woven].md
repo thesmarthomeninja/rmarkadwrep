@@ -112,4 +112,8 @@ output:
 
 # Google Trends: Top 5 keywords
 
-![plot of chunk google trends](figure/google trends-1.png)
+
+
+# Treemaps
+
+![plot of chunk treemaps](figure/treemaps-1.png)

@@ -21,6 +21,7 @@ library(httr)
 library(plotly)
 library(AnomalyDetection)
 library(gtrendsR)
+library(treemap)
 
 # Variables
 googleAuth <- doAuth()
@@ -628,7 +629,7 @@ anomPosition$plot
 
 # Google Trends: Top 5 keywords
 
-```{r google trends, echo=FALSE}
+```{r google trends, echo=FALSE, eval = FALSE}
 
 ninetyDaysAgo <- today() - days(90)
 
@@ -645,5 +646,27 @@ lookupTerms <- chunk17_data %>% mutate(impVolume = Impressions / SearchIS) %>%
 
 res <- gtrends(str_replace_all(lookupTerms[,1], "\\+",""), geo = "IE")
 plot(res)
+
+```
+
+# Treemaps
+
+```{r treemaps, echo=FALSE, eval=FALSE}
+
+ninetyDaysAgo <- today() - days(90)
+
+chunk18_body <- statement(select=c("CampaignName","Cost","CostPerConversion"),
+                         report="CAMPAIGN_PERFORMANCE_REPORT",
+                         start=ninetyDaysAgo,
+                         end=yesterday)
+
+chunk18_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk18_body)
+names(chunk18_data) <- c("Campaign","Cost","CPA")
+
+treemap(chunk18_data, 
+        index="Campaign",  
+        vSize = "Cost",  
+        vColor = "CPA",
+        type="value")
 
 ```
