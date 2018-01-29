@@ -46,3 +46,5 @@ vignettes/*.pdf
 
 #Ignore figures directory
 figure/
+
+/misc/

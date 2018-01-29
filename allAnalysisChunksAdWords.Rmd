@@ -22,6 +22,9 @@ library(plotly)
 library(AnomalyDetection)
 library(gtrendsR)
 library(treemap)
+library(tmap)
+library(sp)
+library(rgdal)
 
 # Variables
 googleAuth <- doAuth()
@@ -668,5 +671,48 @@ treemap(chunk18_data,
         vSize = "Cost",  
         vColor = "CPA",
         type="value")
+
+```
+
+# Geoperformance
+
+```{r geoperformance, echo=FALSE, eval=FALSE}
+
+counties <- readOGR("misc","Census2011_Admin_Counties_generalised20m")
+locationIds <- read.csv("misc/AdWords_API_Location_Criteria.csv")
+names(locationIds) <- c("id","name","longName","parentId","countryCode","targetType","status")
+
+ninetyDaysAgo <- today() - days(90)
+
+chunk19_body <- statement(select=c("CountryCriteriaId","RegionCriteriaId","Cost","Conversions","AverageCpc", "CostPerConversion"),
+                         report="GEO_PERFORMANCE_REPORT",
+                         start=ninetyDaysAgo,
+                         end=yesterday)
+
+chunk19_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk19_body)
+names(chunk19_data) <- c("Country","Region","Cost","Conversions","CPC","CPA")
+chunk19_data$Region <- as.numeric(chunk19_data$Region)
+
+mergedAdWords <- inner_join(chunk19_data, locationIds, by = c("Region"="id"))
+mergedAdWords$name <- str_replace(mergedAdWords$name, "County (.*)", "\\1 County")
+
+mergedForPlot <- sp::merge(counties, mergedAdWords, by.x = "COUNTYNAME", by.y = "name")
+
+tm_shape(mergedForPlot) +
+    tm_fill(col = "Conversions") +
+    tm_text("COUNTYNAME")
+
+tm_shape(mergedForPlot) +
+    tm_fill(col = "CPC") +
+    tm_text("COUNTYNAME")
+
+tm_shape(mergedForPlot) +
+    tm_fill(col = "Cost") +
+    tm_text("COUNTYNAME")
+
+tm_shape(mergedForPlot) +
+    tm_fill(col = "CPA") +
+    tm_text("COUNTYNAME")
+
 
 ```
