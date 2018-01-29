@@ -4,7 +4,12 @@ output:
   html_document:
     toc: true
     toc_depth: 2
-    number_sections: true
+    toc_float:
+      collapse: true
+      smooth_scroll: false
+    fig_width: 8
+    fig_height: 7
+    fig_align: "center"
 ---
 
 ```{r setup, include=FALSE}
@@ -25,6 +30,8 @@ library(treemap)
 library(tmap)
 library(sp)
 library(rgdal)
+library(ggrepel)
+library(rmarkdown)
 
 # Variables
 googleAuth <- doAuth()
@@ -38,88 +45,90 @@ startOfCurrentMonth = today() - day(today()) + 1
 endOfLastMonth = startOfCurrentMonth - 1 
 starOfLastMonth = endOfLastMonth - days_in_month(endOfLastMonth) + 1
 ```
-# Campaign performance
-## Performance: Month-to-date
+# Campaign performance {.tabset}
 
-```{r campaign scatterplot 1, echo=FALSE, eval=FALSE}
+## Month-to-date
 
-chunk1_body <- statement(select=c('CampaignName','Conversions','CostPerConversion','Cost'),
+```{r campaign scatterplot 1, echo=FALSE}
+
+chunk1Body <- statement(select=c('CampaignName','Conversions','CostPerConversion','Cost'),
                          report="CAMPAIGN_PERFORMANCE_REPORT",
                          where="Cost > 150000000",
                          start=startOfCurrentMonth,
                          end=yesterday)
 
-chunk1_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk1_body)
+chunk1Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk1Body)
 
-names(chunk1_data) <- c("Campaign", "Conversions", "CPA", "Cost")
+names(chunk1Data) <- c("Campaign", "Conversions", "CPA", "Cost")
 
-ggplot(chunk1_data, aes(x = Cost, y = CPA, size = Conversions)) +
-    geom_point() +
-    geom_text(aes(label = Campaign))
+plot_ly(data = chunk1Data, x = ~Cost, y = ~CPA, size = ~Conversions,
+        text = ~paste("Campaign: ", Campaign, "<br>Cost: ", Cost, "<br>Conversions: ",
+                      Conversions, "<br>CPA: ", CPA),
+        type = "scatter", mode = "markers")
 
 ```
 
-## Performance: Last 30 days
+## Last 30 days
 
 ```{r campaign scatterplot 2, echo=FALSE, eval=FALSE}
 
 thirtyDaysAgo <- today() - days(30)
 
-chunk2_body <- statement(select=c('CampaignName','Conversions','CostPerConversion','Cost'),
+chunk2Body <- statement(select=c('CampaignName','Conversions','CostPerConversion','Cost'),
                          report="CAMPAIGN_PERFORMANCE_REPORT",
                          where="Cost > 150000000",
                          start=thirtyDaysAgo,
                          end=yesterday)
 
-chunk2_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk2_body)
+chunk2Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk2Body)
 
-names(chunk2_data) <- c("Campaign", "Conversions", "CPA", "Cost")
+names(chunk2Data) <- c("Campaign", "Conversions", "CPA", "Cost")
 
-ggplot(chunk2_data, aes(x = Cost, y = CPA, size = Conversions)) +
+ggplot(chunk2Data, aes(x = Cost, y = CPA, size = Conversions)) +
     geom_point() +
     geom_text(aes(label = Campaign))
 
 ```
 
-## Performance: Last 60 days
+## Last 60 days
 
 ```{r campaign scatterplot 3, echo=FALSE, eval=FALSE}
 
 sixtyDaysAgo <- today() - days(60)
 
-chunk3_body <- statement(select=c('CampaignName','Conversions','CostPerConversion','Cost'),
+chunk3Body <- statement(select=c('CampaignName','Conversions','CostPerConversion','Cost'),
                          report="CAMPAIGN_PERFORMANCE_REPORT",
                          where="Cost > 150000000",
                          start=sixtyDaysAgo,
                          end=yesterday)
 
-chunk3_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk3_body)
+chunk3Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk3Body)
 
-names(chunk3_data) <- c("Campaign", "Conversions", "CPA", "Cost")
+names(chunk3Data) <- c("Campaign", "Conversions", "CPA", "Cost")
 
-ggplot(chunk3_data, aes(x = Cost, y = CPA, size = Conversions)) +
+ggplot(chunk3Data, aes(x = Cost, y = CPA, size = Conversions)) +
     geom_point() +
     geom_text(aes(label = Campaign))
 
 ```
 
-## Performance: Last 90 days
+## Last 90 days
 
 ```{r campaign scatterplot 4, echo=FALSE, eval=FALSE, eval=FALSE}
 
 ninetyDaysAgo <- today() - days(90)
 
-chunk4_body <- statement(select=c('CampaignName','Conversions','CostPerConversion','Cost'),
+chunk4Body <- statement(select=c('CampaignName','Conversions','CostPerConversion','Cost'),
                          report="CAMPAIGN_PERFORMANCE_REPORT",
                          where="Cost > 150000000",
                          start=ninetyDaysAgo,
                          end=yesterday)
 
-chunk4_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk4_body)
+chunk4Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk4Body)
 
-names(chunk4_data) <- c("Campaign", "Conversions", "CPA", "Cost")
+names(chunk4Data) <- c("Campaign", "Conversions", "CPA", "Cost")
 
- ggplot(chunk4_data, aes(x = Cost, y = CPA, size = Conversions)) +
+ ggplot(chunk4Data, aes(x = Cost, y = CPA, size = Conversions)) +
     geom_point() +
     geom_text(aes(label = Campaign))
 
@@ -131,97 +140,97 @@ names(chunk4_data) <- c("Campaign", "Conversions", "CPA", "Cost")
 
 aYearAgo <- today() - days(365)
 
-chunk5_body <- statement(select=c('Date','Clicks','Conversions','CostPerConversion',
+chunk5Body <- statement(select=c('Date','Clicks','Conversions','CostPerConversion',
                                   'Cost','ConversionRate','AverageCpc','Impressions','Ctr'),
                          report="ACCOUNT_PERFORMANCE_REPORT",
                          start=aYearAgo,
                          end=yesterday)
 
-chunk5_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk5_body)
+chunk5Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk5Body)
 
-corr <- cor(chunk5_data[,-1])
+corr <- cor(chunk5Data[,-1])
 
 corrplot(corr, method = "pie", type = "upper")
 
 ```		
-# Ad Scheduling Heatmaps
+# Ad Scheduling Heatmaps {.tabset}
 
-## Ad Scheduling: Impressions
+## Impressions
 
 ```{r ad scheduling heatmap 1, echo=FALSE, eval=FALSE}
 
 ninetyDaysAgo <- today() - days(90)
 
-chunk6_body <- statement(select=c("DayOfWeek","HourOfDay","Impressions","Conversions","CostPerConversion","SearchImpressionShare"),
+chunk6Body <- statement(select=c("DayOfWeek","HourOfDay","Impressions","Conversions","CostPerConversion","SearchImpressionShare"),
                          report="ACCOUNT_PERFORMANCE_REPORT",
                          start=ninetyDaysAgo,
                          end=yesterday)
 
-chunk6_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk6_body)
+chunk6Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk6Body)
 
-names(chunk6_data) <- c("DayOfWeek", "HourOfDay", "Impressions", "Conversions","CPA","SearchIS")
+names(chunk6Data) <- c("DayOfWeek", "HourOfDay", "Impressions", "Conversions","CPA","SearchIS")
 
-chunk6_data$HourOfDay <- factor(chunk6_data$HourOfDay, levels=c(0:23))
-chunk6_data$DayOfWeek <- factor(chunk6_data$DayOfWeek, levels=c("Sunday","Saturday","Friday","Thursday","Wednesday","Tuesday","Monday"))
+chunk6Data$HourOfDay <- factor(chunk6Data$HourOfDay, levels=c(0:23))
+chunk6Data$DayOfWeek <- factor(chunk6Data$DayOfWeek, levels=c("Sunday","Saturday","Friday","Thursday","Wednesday","Tuesday","Monday"))
 
-ggplot(chunk6_data, aes(x=HourOfDay, y=DayOfWeek, z=Impressions)) + geom_tile(aes(fill = Impressions)) +
+ggplot(chunk6Data, aes(x=HourOfDay, y=DayOfWeek, z=Impressions)) + geom_tile(aes(fill = Impressions)) +
     scale_fill_gradient(low="white", high="blue", labels=comma)
 
 ```
 
-## Ad Scheduling: Search Impression Share
+## Search Impression Share
 
 ```{r ad scheduling heatmap 2, echo=FALSE, eval=FALSE}
 
-ggplot(chunk6_data, aes(x=HourOfDay, y=DayOfWeek, z=SearchIS)) + geom_tile(aes(fill = SearchIS)) +
+ggplot(chunk6Data, aes(x=HourOfDay, y=DayOfWeek, z=SearchIS)) + geom_tile(aes(fill = SearchIS)) +
     scale_fill_gradient2(low="white", high="blue", labels=comma, midpoint=0.5)
 
 ```
 
-## Ad Scheduling: Conversions
+## Conversions
 
 ```{r ad scheduling heatmap 3, echo=FALSE, eval=FALSE}
 
-ggplot(chunk6_data, aes(x=HourOfDay, y=DayOfWeek, z=Conversions)) + geom_tile(aes(fill = Conversions)) +
+ggplot(chunk6Data, aes(x=HourOfDay, y=DayOfWeek, z=Conversions)) + geom_tile(aes(fill = Conversions)) +
     scale_fill_gradient(low="white", high="blue", labels=comma)
 
 ```
 
-## Ad Scheduling: CPA
+## CPA
 
 ```{r ad scheduling heatmap 4, echo=FALSE, eval=FALSE}
 
-ggplot(chunk6_data[chunk6_data$CPA > 0,], aes(x=HourOfDay, y=DayOfWeek, z=CPA)) + geom_tile(aes(fill = CPA)) +
+ggplot(chunk6Data[chunk6Data$CPA > 0,], aes(x=HourOfDay, y=DayOfWeek, z=CPA)) + geom_tile(aes(fill = CPA)) +
     scale_fill_gradient2(low="white", high="blue", labels=comma, midpoint=50)
 
 ```
 
-# Search Terms N-Grams
+# Search Terms N-Grams {.tabset}
 
 ```{r tidy search terms, echo=FALSE, eval=FALSE}
 
 ninetyDaysAgo <- today() - days(90)
 data(stop_words)
 
-chunk7_body <- statement(select=c("Query","Clicks","Impressions","Conversions","Cost"),
+chunk7Body <- statement(select=c("Query","Clicks","Impressions","Conversions","Cost"),
                          report="SEARCH_QUERY_PERFORMANCE_REPORT",
                          start=ninetyDaysAgo,
                          end=yesterday)
 
-chunk7_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk7_body)
+chunk7Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk7Body)
 
-unigrams <- chunk7_data %>% unnest_tokens(word, Searchterm) %>% anti_join(stop_words) %>%
+unigrams <- chunk7Data %>% unnest_tokens(word, Searchterm) %>% anti_join(stop_words) %>%
     group_by(word) %>%
     summarize(Clicks=sum(Clicks), Impressions=sum(Impressions), Conversions=sum(Conversions), Cost=sum(Cost),
               Ctr=sum(Clicks)/sum(Impressions), ConversionRate=sum(Conversions)/sum(Clicks), Cpa=sum(Cost)/sum(Conversions),
               AvgCpc = sum(Cost)/sum(Clicks))
 
-bigrams <- chunk7_data %>% unnest_tokens(bigram, Searchterm, token="ngrams", n=2) %>% group_by(bigram) %>%
+bigrams <- chunk7Data %>% unnest_tokens(bigram, Searchterm, token="ngrams", n=2) %>% group_by(bigram) %>%
     summarize(Clicks=sum(Clicks), Impressions=sum(Impressions), Conversions=sum(Conversions),
               Cost=sum(Cost), Ctr=sum(Clicks)/sum(Impressions), ConversionRate=sum(Conversions)/sum(Clicks),
               Cpa=sum(Cost)/sum(Conversions), AvgCpc = sum(Cost)/sum(Clicks))
 
-trigrams <- chunk7_data %>% unnest_tokens(trigram, Searchterm, token="ngrams", n=3) %>% group_by(trigram) %>%
+trigrams <- chunk7Data %>% unnest_tokens(trigram, Searchterm, token="ngrams", n=3) %>% group_by(trigram) %>%
     summarize(Clicks=sum(Clicks), Impressions=sum(Impressions), Conversions=sum(Conversions),
               Cost=sum(Cost), Ctr=sum(Clicks)/sum(Impressions), ConversionRate=sum(Conversions)/sum(Clicks),
               Cpa=sum(Cost)/sum(Conversions), AvgCpc = sum(Cost)/sum(Clicks))
@@ -354,17 +363,17 @@ plot_grid(pt_imp, pt_clicks, pt_ctr, pt_cpc, pt_cost, pt_conv, pt_cpa, pt_cr, nc
 
 ninetyDaysAgo <- today() - days(90)
 
-chunk8_body <- statement(select=c("Date","AverageCpc","SearchRankLostImpressionShare","SearchBudgetLostImpressionShare",
+chunk8Body <- statement(select=c("Date","AverageCpc","SearchRankLostImpressionShare","SearchBudgetLostImpressionShare",
                                   "SearchExactMatchImpressionShare","SearchImpressionShare"),
                          report="ACCOUNT_PERFORMANCE_REPORT",
                          start=ninetyDaysAgo,
                          end=yesterday)
 
-chunk8_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk8_body)
+chunk8Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk8Body)
 
-names(chunk8_data) <- c("Day","CPC","ISLostToRank","ISLostToBudget","ExactMatchIS","IS")
+names(chunk8Data) <- c("Day","CPC","ISLostToRank","ISLostToBudget","ExactMatchIS","IS")
 
-long_chunk8 <- gather(chunk8_data, metric, value, CPC:IS)
+long_chunk8 <- gather(chunk8Data, metric, value, CPC:IS)
 
 long_IS <- long_chunk8 %>% filter(metric %in% c("IS","ISLostToBudget","ISLostToRank"))
 long_other <- long_chunk8 %>% filter(metric %in% c("CPC","ExactMatchIS"))
@@ -382,19 +391,19 @@ ggplot(long_IS) +
 
 ```{r metrics pacing, echo=FALSE, eval=FALSE}
 
-chunk9_body <- statement(select=c('Conversions','Cost'),
+chunk9Body <- statement(select=c('Conversions','Cost'),
                          report="ACCOUNT_PERFORMANCE_REPORT",
                          start=startOfCurrentMonth,
                          end=yesterday)
 
-chunk9_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk9_body)
+chunk9Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk9Body)
 
 paceConv <- (targetConversions/days_in_month(today())) * day(yesterday)
 paceCost <- (availableBudget/days_in_month(today())) * day(yesterday)
 
 allStats <- data.frame(stat = c("target","pace","current"),
-                       conversions = c(targetConversions, paceConv, chunk9_data$Conversions),
-                       cost = c(availableBudget, paceCost, chunk9_data$Cost))
+                       conversions = c(targetConversions, paceConv, chunk9Data$Conversions),
+                       cost = c(availableBudget, paceCost, chunk9Data$Cost))
 
 ggplot(data = allStats, aes(x = "", y = conversions, fill = stat)) +
     geom_bar(stat = "identity", position = "dodge", width = 0.2) +
@@ -412,15 +421,15 @@ ggplot(data = allStats, aes(x = "", y = cost, fill = stat)) +
 
 ninetyDaysAgo <- today() - days(90)
 
-chunk10_body <- statement(select=c('Date','Device','Conversions','CostPerConversion',
+chunk10Body <- statement(select=c('Date','Device','Conversions','CostPerConversion',
                                   'ConversionRate','AverageCpc','Impressions','Ctr'),
                          report="ACCOUNT_PERFORMANCE_REPORT",
                          start=ninetyDaysAgo,
                          end=yesterday)
 
-chunk10_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk10_body)
+chunk10Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk10Body)
 
-long_chunk10 <- chunk10_data %>% gather(metric, value, Conversions:CTR)
+long_chunk10 <- chunk10Data %>% gather(metric, value, Conversions:CTR)
 
 long_chunk10 %>% ggplot(aes(x = Day, y = value, color = Device)) +
     geom_line() +
@@ -434,17 +443,17 @@ long_chunk10 %>% ggplot(aes(x = Day, y = value, color = Device)) +
 
 ninetyDaysAgo <- today() - days(90)
 
-chunk11_body <- statement(select=c('EffectiveFinalUrl'),
+chunk11Body <- statement(select=c('EffectiveFinalUrl'),
                          report="FINAL_URL_REPORT",
                          where="Impressions > 0",
                          start=ninetyDaysAgo,
                          end=yesterday)
 
-chunk11_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk11_body)
+chunk11Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk11Body)
 
 responseCodes <- character()
 
-for(i in chunk11_data$FinalURL){
+for(i in chunk11Data$FinalURL){
     url <- as.character(i)
     response <- GET(i)
     Sys.sleep(sample(1:5, 1))
@@ -453,7 +462,7 @@ for(i in chunk11_data$FinalURL){
 
 responseCodes <- data.frame(ResponseCode = responseCodes)
 
-problemURLs <- cbind(chunk11_data, responseCodes) %>% filter(responseCodes != 200)
+problemURLs <- cbind(chunk11Data, responseCodes) %>% filter(responseCodes != 200)
 
 if(nrow(problemURLs) == 0){
     message("All Final URLs are ok.")
@@ -465,24 +474,24 @@ if(nrow(problemURLs) == 0){
 
 ```{r quality score analysis, echo=FALSE, eval=FALSE}
 
-chunk12_body <- statement(select=c("Date","CampaignName","AdGroupName","Criteria","Impressions","HasQualityScore","CreativeQualityScore",
+chunk12Body <- statement(select=c("Date","CampaignName","AdGroupName","Criteria","Impressions","HasQualityScore","CreativeQualityScore",
                                    "PostClickQualityScore","SearchPredictedCtr","QualityScore"),
                          report="KEYWORDS_PERFORMANCE_REPORT",
                          where="HasQualityScore = TRUE",
                          start=yesterday,
                          end=yesterday)
 
-chunk12_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk12_body)
+chunk12Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk12Body)
 
-chunk12_data %>% group_by(Adrelevance) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n))
-chunk12_data %>% group_by(Landingpageexperience) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n))
-chunk12_data %>% group_by(Expectedclickthroughrate) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n))
-chunk12_data %>% group_by(Qualityscore) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n))
+chunk12Data %>% group_by(Adrelevance) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n))
+chunk12Data %>% group_by(Landingpageexperience) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n))
+chunk12Data %>% group_by(Expectedclickthroughrate) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n))
+chunk12Data %>% group_by(Qualityscore) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n))
 
-plot_data <- chunk12_data %>% mutate(QSImpr = as.numeric(Qualityscore) * Impressions) %>% group_by(Campaign, Adgroup) %>%
+plotData <- chunk12Data %>% mutate(QSImpr = as.numeric(Qualityscore) * Impressions) %>% group_by(Campaign, Adgroup) %>%
     summarise(QSImpr = sum(QSImpr), Impressions = sum(Impressions)) %>% ungroup() %>% mutate(weightedQS = QSImpr/Impressions) 
 
-plot <- plot_data %>% ggplot(aes(x = weightedQS, y = 1)) + geom_text(aes(label = Adgroup),position = position_jitter(0.7), size = 1.5)
+plot <- plotData %>% ggplot(aes(x = weightedQS, y = 1)) + geom_text(aes(label = Adgroup),position = position_jitter(0.7), size = 1.5)
 ggplotly(plot)
 
 ```
@@ -493,19 +502,19 @@ ggplotly(plot)
 
 ninetyDaysAgo <- today() - days(90)
 
-chunk13_body <- statement(select=c("Date","KeywordMatchType","Impressions","Clicks","Cost","Conversions"),
+chunk13Body <- statement(select=c("Date","KeywordMatchType","Impressions","Clicks","Cost","Conversions"),
                          report="KEYWORDS_PERFORMANCE_REPORT",
                          start=ninetyDaysAgo,
                          end=yesterday)
 
-chunk13_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk13_body)
-names(chunk13_data) <- c("Date","MatchType","Impressions","Clicks","Cost","Conversions")
+chunk13Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk13Body)
+names(chunk13Data) <- c("Date","MatchType","Impressions","Clicks","Cost","Conversions")
 
-chunk13_data <- chunk13_data %>% group_by(Date, MatchType) %>%
+chunk13Data <- chunk13Data %>% group_by(Date, MatchType) %>%
     summarize(Impressions = sum(Impressions), Clicks = sum(Clicks), Cost = sum(Cost),Conversions = sum(Conversions)) %>%
     mutate(Ctr = Clicks/Impressions, CPC = Cost/Clicks, CPA = Cost/Conversions, ConversionRate = Conversions/Clicks)
 
-chunk13_long <- gather(chunk13_data, metric, value, Impressions:ConversionRate)
+chunk13_long <- gather(chunk13Data, metric, value, Impressions:ConversionRate)
 
 ggplot(chunk13_long, aes(y = value, x = Date, color = MatchType)) +
     geom_line() +
@@ -519,45 +528,45 @@ ggplot(chunk13_long, aes(y = value, x = Date, color = MatchType)) +
 
 ninetyDaysAgo <- today() - days(90)
 
-chunk14_body <- statement(select=c('CampaignName','AdGroupName','Id','Description','HeadlinePart2','CriterionId',
+chunk14Body <- statement(select=c('CampaignName','AdGroupName','Id','Description','HeadlinePart2','CriterionId',
                                    'Cost',"Conversions","CostPerConversion"),
                          report="AD_PERFORMANCE_REPORT",
                          where="Cost > 100000000 AND AdNetworkType1 = SEARCH",
                          start=ninetyDaysAgo,
                          end=yesterday)
 
-chunk14_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk14_body)
+chunk14Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk14Body)
 
-names(chunk14_data) <- c("Campaign", "AdGroup", "AdId", "Description", "Headline2", "KeywordId",
+names(chunk14Data) <- c("Campaign", "AdGroup", "AdId", "Description", "Headline2", "KeywordId",
                          "Cost", "Conversions", "CPA")
 
-plot_ly(data = chunk14_data, x = ~Cost, y = ~CPA, size = ~Conversions,
+plot_ly(data = chunk14Data, x = ~Cost, y = ~CPA, size = ~Conversions,
             text = ~paste("Campaign: ", Campaign, "<br>AdGroup: ", AdGroup, "<br>Headline2: ",
                             Headline2, "<br>Description: ", Description ,"<br>KeywordId: ", KeywordId))
 
 ```
 
-# 3x3 Performance Segments
+# 3x3 Performance Segments {.tabset}
 
 ```{r performance segments matrix, echo=FALSE, eval=FALSE}
 
 ninetyDaysAgo <- today() - days(90)
 
-chunk15_body <- statement(select=c("Criteria","CostPerConversion","Impressions","QualityScore",
+chunk15Body <- statement(select=c("Criteria","CostPerConversion","Impressions","QualityScore",
                                    "Cost","Conversions", "AveragePosition", "AverageCpc"),
                          report="KEYWORDS_PERFORMANCE_REPORT",
                          start=ninetyDaysAgo,
                          end=yesterday)
 
-chunk15_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk15_body)
-names(chunk15_data) <- c("Keyword","CPA","Impressions","QS","Cost","Conversions","Position","CPC")
+chunk15Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk15Body)
+names(chunk15Data) <- c("Keyword","CPA","Impressions","QS","Cost","Conversions","Position","CPC")
 ```
 
 ## Converters
 
 ```{r converters matrix, echo=FALSE, eval=FALSE}
 
-hasConversions <- chunk15_data %>% filter(Conversions > 0)
+hasConversions <- chunk15Data %>% filter(Conversions > 0)
 
 plot_ly(data = hasConversions, x = ~log(Conversions), y = ~CPA, color = ~Position, size = ~Position,
         text = ~paste("Keyword: ", Keyword, "<br>Conversions: ", Conversions,
@@ -568,7 +577,7 @@ plot_ly(data = hasConversions, x = ~log(Conversions), y = ~CPA, color = ~Positio
 
 ```{r non-converters matrix, echo=FALSE, eval=FALSE}
 
-notConverting <- chunk15_data %>% filter(Conversions == 0, Cost > 0)
+notConverting <- chunk15Data %>% filter(Conversions == 0, Cost > 0)
 
 plot_ly(data = notConverting, x = ~log(Cost), y = ~CPC, color = ~Position, size = ~Position,
         text = ~paste("Keyword: ", Keyword, "<br>Cost: ", Cost,
@@ -579,7 +588,7 @@ plot_ly(data = notConverting, x = ~log(Cost), y = ~CPC, color = ~Position, size 
 
 ```{r clickless matrix, echo=FALSE, eval=FALSE}
 
-clickless <- chunk15_data %>% filter(Cost == 0, Impressions > 0)
+clickless <- chunk15Data %>% filter(Cost == 0, Impressions > 0)
 
 plot_ly(data = clickless, x = ~log(Impressions), y = ~QS, color = ~Position, size = ~Position, type = 'scatter',
         text = ~paste("Keyword: ", Keyword, "<br>Impressions: ", Impressions,
@@ -592,16 +601,16 @@ plot_ly(data = clickless, x = ~log(Impressions), y = ~QS, color = ~Position, siz
 
 ninetyDaysAgo <- today() - days(90)
 
-chunk16_body <- statement(select=c("Date","HourOfDay","Clicks","Conversions","CostPerConversion",
+chunk16Body <- statement(select=c("Date","HourOfDay","Clicks","Conversions","CostPerConversion",
                                    "AverageCpc","SearchImpressionShare", "AveragePosition"),
                          report="ACCOUNT_PERFORMANCE_REPORT",
                          start=ninetyDaysAgo,
                          end=yesterday)
 
-chunk16_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk16_body)
+chunk16Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk16Body)
 
-names(chunk16_data) <- c("Date","HourOfDay","Clicks","Conversions","CPA","CPC","SearchIS","Position")
-anomalyData <- chunk16_data %>% mutate(DateTime = ymd_hms(paste0(Date," ",HourOfDay,":00:00")))
+names(chunk16Data) <- c("Date","HourOfDay","Clicks","Conversions","CPA","CPC","SearchIS","Position")
+anomalyData <- chunk16Data %>% mutate(DateTime = ymd_hms(paste0(Date," ",HourOfDay,":00:00")))
 anomalyData <- anomalyData %>% arrange(DateTime)
 
 anomClicks <- AnomalyDetectionTs(anomalyData[,c("DateTime","Clicks")], direction='both',
@@ -636,15 +645,15 @@ anomPosition$plot
 
 ninetyDaysAgo <- today() - days(90)
 
-chunk17_body <- statement(select=c("Criteria","Impressions","SearchImpressionShare"),
+chunk17Body <- statement(select=c("Criteria","Impressions","SearchImpressionShare"),
                          report="KEYWORDS_PERFORMANCE_REPORT",
                          start=ninetyDaysAgo,
                          end=yesterday)
 
-chunk17_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk17_body)
-names(chunk17_data) <- c("Keyword","Impressions","SearchIS")
+chunk17Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk17Body)
+names(chunk17Data) <- c("Keyword","Impressions","SearchIS")
 
-lookupTerms <- chunk17_data %>% mutate(impVolume = Impressions / SearchIS) %>%
+lookupTerms <- chunk17Data %>% mutate(impVolume = Impressions / SearchIS) %>%
     arrange(desc(impVolume)) %>% head(5) %>% select(Keyword)
 
 res <- gtrends(str_replace_all(lookupTerms[,1], "\\+",""), geo = "IE")
@@ -658,15 +667,15 @@ plot(res)
 
 ninetyDaysAgo <- today() - days(90)
 
-chunk18_body <- statement(select=c("CampaignName","Cost","CostPerConversion"),
+chunk18Body <- statement(select=c("CampaignName","Cost","CostPerConversion"),
                          report="CAMPAIGN_PERFORMANCE_REPORT",
                          start=ninetyDaysAgo,
                          end=yesterday)
 
-chunk18_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk18_body)
-names(chunk18_data) <- c("Campaign","Cost","CPA")
+chunk18Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk18Body)
+names(chunk18Data) <- c("Campaign","Cost","CPA")
 
-treemap(chunk18_data, 
+treemap(chunk18Data, 
         index="Campaign",  
         vSize = "Cost",  
         vColor = "CPA",
@@ -684,16 +693,16 @@ names(locationIds) <- c("id","name","longName","parentId","countryCode","targetT
 
 ninetyDaysAgo <- today() - days(90)
 
-chunk19_body <- statement(select=c("CountryCriteriaId","RegionCriteriaId","Cost","Conversions","AverageCpc", "CostPerConversion"),
+chunk19Body <- statement(select=c("CountryCriteriaId","RegionCriteriaId","Cost","Conversions","AverageCpc", "CostPerConversion"),
                          report="GEO_PERFORMANCE_REPORT",
                          start=ninetyDaysAgo,
                          end=yesterday)
 
-chunk19_data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk19_body)
-names(chunk19_data) <- c("Country","Region","Cost","Conversions","CPC","CPA")
-chunk19_data$Region <- as.numeric(chunk19_data$Region)
+chunk19Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk19Body)
+names(chunk19Data) <- c("Country","Region","Cost","Conversions","CPC","CPA")
+chunk19Data$Region <- as.numeric(chunk19Data$Region)
 
-mergedAdWords <- inner_join(chunk19_data, locationIds, by = c("Region"="id"))
+mergedAdWords <- inner_join(chunk19Data, locationIds, by = c("Region"="id"))
 mergedAdWords$name <- str_replace(mergedAdWords$name, "County (.*)", "\\1 County")
 
 mergedForPlot <- sp::merge(counties, mergedAdWords, by.x = "COUNTYNAME", by.y = "name")

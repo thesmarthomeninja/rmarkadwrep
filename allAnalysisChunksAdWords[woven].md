@@ -11,7 +11,7 @@ output:
 # Campaign performance
 ## Performance: Month-to-date
 
-
+![plot of chunk campaign scatterplot 1](figure/campaign scatterplot 1-1.png)
 
 ## Performance: Last 30 days
 
@@ -121,15 +121,3 @@ output:
 # Geoperformance
 
 
-```
-## OGR data source with driver: ESRI Shapefile 
-## Source: "misc", layer: "Census2011_Admin_Counties_generalised20m"
-## with 34 features
-## It has 20 fields
-```
-
-```
-## Warning: NAs introduced by coercion
-```
-
-![plot of chunk geoperformance](figure/geoperformance-1.png)![plot of chunk geoperformance](figure/geoperformance-2.png)![plot of chunk geoperformance](figure/geoperformance-3.png)![plot of chunk geoperformance](figure/geoperformance-4.png)
