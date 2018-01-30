@@ -10,6 +10,8 @@ output:
     fig_width: 8
     fig_height: 7
     fig_align: "center"
+    df_print: tibble
+    theme: sandstone
 ---
 
 ```{r setup, include=FALSE}
@@ -32,6 +34,7 @@ library(sp)
 library(rgdal)
 library(ggrepel)
 library(rmarkdown)
+library(knitr)
 
 # Variables
 googleAuth <- doAuth()
@@ -49,7 +52,7 @@ starOfLastMonth = endOfLastMonth - days_in_month(endOfLastMonth) + 1
 
 ## Month-to-date
 
-```{r campaign scatterplot 1, echo=FALSE}
+```{r campaign scatterplot 1, echo=FALSE, eval=FALSE}
 
 chunk1Body <- statement(select=c('CampaignName','Conversions','CostPerConversion','Cost'),
                          report="CAMPAIGN_PERFORMANCE_REPORT",
@@ -84,9 +87,10 @@ chunk2Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, state
 
 names(chunk2Data) <- c("Campaign", "Conversions", "CPA", "Cost")
 
-ggplot(chunk2Data, aes(x = Cost, y = CPA, size = Conversions)) +
-    geom_point() +
-    geom_text(aes(label = Campaign))
+plot_ly(data = chunk2Data, x = ~Cost, y = ~CPA, size = ~Conversions,
+        text = ~paste("Campaign: ", Campaign, "<br>Cost: ", Cost, "<br>Conversions: ",
+                      Conversions, "<br>CPA: ", CPA),
+        type = "scatter", mode = "markers")
 
 ```
 
@@ -106,15 +110,16 @@ chunk3Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, state
 
 names(chunk3Data) <- c("Campaign", "Conversions", "CPA", "Cost")
 
-ggplot(chunk3Data, aes(x = Cost, y = CPA, size = Conversions)) +
-    geom_point() +
-    geom_text(aes(label = Campaign))
+plot_ly(data = chunk3Data, x = ~Cost, y = ~CPA, size = ~Conversions,
+        text = ~paste("Campaign: ", Campaign, "<br>Cost: ", Cost, "<br>Conversions: ",
+                      Conversions, "<br>CPA: ", CPA),
+        type = "scatter", mode = "markers")
 
 ```
 
 ## Last 90 days
 
-```{r campaign scatterplot 4, echo=FALSE, eval=FALSE, eval=FALSE}
+```{r campaign scatterplot 4, echo=FALSE, eval=FALSE}
 
 ninetyDaysAgo <- today() - days(90)
 
@@ -128,9 +133,10 @@ chunk4Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, state
 
 names(chunk4Data) <- c("Campaign", "Conversions", "CPA", "Cost")
 
- ggplot(chunk4Data, aes(x = Cost, y = CPA, size = Conversions)) +
-    geom_point() +
-    geom_text(aes(label = Campaign))
+plot_ly(data = chunk4Data, x = ~Cost, y = ~CPA, size = ~Conversions,
+        text = ~paste("Campaign: ", Campaign, "<br>Cost: ", Cost, "<br>Conversions: ",
+                      Conversions, "<br>CPA: ", CPA),
+        type = "scatter", mode = "markers")
 
 ```
 
@@ -243,35 +249,51 @@ trigrams <- chunk7Data %>% unnest_tokens(trigram, Searchterm, token="ngrams", n=
 
 pu_imp <- unigrams %>% top_n(10, Impressions) %>% ggplot(aes(y=Impressions, x=reorder(word, Impressions))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("word") +
+    theme(axis.text.y = element_text(size=8))
 
 pu_clicks <- unigrams %>% top_n(10, Clicks) %>% ggplot(aes(y=Clicks, x=reorder(word, Clicks))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("word") +
+    theme(axis.text.y = element_text(size=8))
 
 pu_ctr <- unigrams %>% filter(Clicks > 100) %>% top_n(10, Ctr) %>% ggplot(aes(y=Ctr, x=reorder(word, Ctr))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("word") +
+    theme(axis.text.y = element_text(size=8))
 
 pu_cpc <- unigrams %>% filter(Clicks > 100) %>% top_n(10, AvgCpc) %>% ggplot(aes(y=AvgCpc, x=reorder(word, AvgCpc))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("word") +
+    theme(axis.text.y = element_text(size=8))
 
 pu_cost <- unigrams %>% top_n(10, Cost) %>% ggplot(aes(y=Cost, x=reorder(word, Cost))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("word") +
+    theme(axis.text.y = element_text(size=8))
 
 pu_conv <- unigrams %>% top_n(10, Conversions) %>% ggplot(aes(y=Conversions, x=reorder(word, Conversions))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("word") +
+    theme(axis.text.y = element_text(size=8))
 
 pu_cpa <- unigrams %>% filter(Conversions > 1) %>% top_n(10, Cpa) %>% ggplot(aes(y=Cpa, x=reorder(word, Cpa))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("word") +
+    theme(axis.text.y = element_text(size=8))
 
 pu_cr <- unigrams %>% filter(Conversions > 1) %>% top_n(10, ConversionRate) %>% ggplot(aes(y=ConversionRate, x=reorder(word, ConversionRate))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("word") +
+    theme(axis.text.y = element_text(size=8))
 
 plot_grid(pu_imp, pu_clicks, pu_ctr, pu_cpc, pu_cost, pu_conv, pu_cpa, pu_cr, ncol=2)
 
@@ -283,35 +305,51 @@ plot_grid(pu_imp, pu_clicks, pu_ctr, pu_cpc, pu_cost, pu_conv, pu_cpa, pu_cr, nc
 
 pb_imp <- bigrams %>% top_n(10, Impressions) %>% ggplot(aes(y=Impressions, x=reorder(bigram, Impressions))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("phrase") +
+    theme(axis.text.y = element_text(size=8))
 
 pb_clicks <- bigrams %>% top_n(10, Clicks) %>% ggplot(aes(y=Clicks, x=reorder(bigram, Clicks))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("phrase") +
+    theme(axis.text.y = element_text(size=8))
 
 pb_ctr <- bigrams %>% filter(Clicks > 100) %>% top_n(10, Ctr) %>% ggplot(aes(y=Ctr, x=reorder(bigram, Ctr))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("phrase") +
+    theme(axis.text.y = element_text(size=8))
 
 pb_cpc <- bigrams %>% filter(Clicks > 100) %>% top_n(10, AvgCpc) %>% ggplot(aes(y=AvgCpc, x=reorder(bigram, AvgCpc))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("phrase") +
+    theme(axis.text.y = element_text(size=8))
 
 pb_cost <- bigrams %>% top_n(10, Cost) %>% ggplot(aes(y=Cost, x=reorder(bigram, Cost))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("phrase") +
+    theme(axis.text.y = element_text(size=8))
 
 pb_conv <- bigrams %>% top_n(10, Conversions) %>% ggplot(aes(y=Conversions, x=reorder(bigram, Conversions))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("phrase") +
+    theme(axis.text.y = element_text(size=8))
 
 pb_cpa <- bigrams %>% filter(Conversions > 1) %>% top_n(10, Cpa) %>% ggplot(aes(y=Cpa, x=reorder(bigram, Cpa))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("phrase") +
+    theme(axis.text.y = element_text(size=8))
 
 pb_cr <- bigrams %>% filter(Conversions > 1) %>% top_n(10, ConversionRate) %>% ggplot(aes(y=ConversionRate, x=reorder(bigram, ConversionRate))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("phrase") +
+    theme(axis.text.y = element_text(size=8))
 
 plot_grid(pb_imp, pb_clicks, pb_ctr, pb_cpc, pb_cost, pb_conv, pb_cpa, pb_cr, ncol=2)
 
@@ -323,35 +361,51 @@ plot_grid(pb_imp, pb_clicks, pb_ctr, pb_cpc, pb_cost, pb_conv, pb_cpa, pb_cr, nc
 
 pt_imp <- trigrams %>% top_n(10, Impressions) %>% ggplot(aes(y=Impressions, x=reorder(trigram, Impressions))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("phrase") +
+    theme(axis.text.y = element_text(size=8))
 
 pt_clicks <- trigrams %>% top_n(10, Clicks) %>% ggplot(aes(y=Clicks, x=reorder(trigram, Clicks))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("phrase") +
+    theme(axis.text.y = element_text(size=8))
 
 pt_ctr <- trigrams %>% filter(Clicks > 100) %>% top_n(10, Ctr) %>% ggplot(aes(y=Ctr, x=reorder(trigram, Ctr))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("phrase") +
+    theme(axis.text.y = element_text(size=8))
 
 pt_cpc <- trigrams %>% filter(Clicks > 100) %>% top_n(10, AvgCpc) %>% ggplot(aes(y=AvgCpc, x=reorder(trigram, AvgCpc))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("phrase") +
+    theme(axis.text.y = element_text(size=8))
 
 pt_cost <- trigrams %>% top_n(10, Cost) %>% ggplot(aes(y=Cost, x=reorder(trigram, Cost))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("phrase") +
+    theme(axis.text.y = element_text(size=8))
 
 pt_conv <- trigrams %>% top_n(10, Conversions) %>% ggplot(aes(y=Conversions, x=reorder(trigram, Conversions))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("phrase") +
+    theme(axis.text.y = element_text(size=8))
 
 pt_cpa <- trigrams %>% filter(Conversions > 1) %>% top_n(10, Cpa) %>% ggplot(aes(y=Cpa, x=reorder(trigram, Cpa))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("phrase") +
+    theme(axis.text.y = element_text(size=8))
 
 pt_cr <- trigrams %>% filter(Conversions > 1) %>% top_n(10, ConversionRate) %>% ggplot(aes(y=ConversionRate, x=reorder(trigram, ConversionRate))) +
     geom_bar(stat = "identity") +
-    coord_flip()
+    coord_flip() +
+    xlab("phrase") +
+    theme(axis.text.y = element_text(size=8))
 
 plot_grid(pt_imp, pt_clicks, pt_ctr, pt_cpc, pt_cost, pt_conv, pt_cpa, pt_cr, ncol=2)
 
@@ -383,13 +437,14 @@ ggplot(long_other, aes(x = Day, y = value)) +
     facet_wrap(~metric, ncol=1)
 
 ggplot(long_IS) +
-    geom_area(aes(x = Day, y = value, fill = metric), position = "stack")
+    geom_area(aes(x = Day, y = value, fill = metric), position = "stack") +
+    theme(legend.position = "bottom")
 
 ```
 
 # Metrics pacing vs targets
 
-```{r metrics pacing, echo=FALSE, eval=FALSE}
+```{r metrics pacing, echo=FALSE, fig.height=2, eval=FALSE} 
 
 chunk9Body <- statement(select=c('Conversions','Cost'),
                          report="ACCOUNT_PERFORMANCE_REPORT",
@@ -405,13 +460,15 @@ allStats <- data.frame(stat = c("target","pace","current"),
                        conversions = c(targetConversions, paceConv, chunk9Data$Conversions),
                        cost = c(availableBudget, paceCost, chunk9Data$Cost))
 
-ggplot(data = allStats, aes(x = "", y = conversions, fill = stat)) +
-    geom_bar(stat = "identity", position = "dodge", width = 0.2) +
-    coord_flip()
+ggplot(data = allStats, aes(x = stat, y = conversions, fill = stat)) +
+    geom_bar(stat = "identity", position = position_dodge(0.4), width = 0.5) +
+    coord_flip() +
+    theme(legend.position = "none")
 
-ggplot(data = allStats, aes(x = "", y = cost, fill = stat)) +
-    geom_bar(stat = "identity", position = "dodge", width = 0.2) +
-    coord_flip()
+ggplot(data = allStats, aes(x = stat, y = cost, fill = stat)) +
+    geom_bar(stat = "identity", position = position_dodge(0.4), width = 0.5) +
+    coord_flip() +
+    theme(legend.position = "none")
 
 ```
 
@@ -433,7 +490,8 @@ long_chunk10 <- chunk10Data %>% gather(metric, value, Conversions:CTR)
 
 long_chunk10 %>% ggplot(aes(x = Day, y = value, color = Device)) +
     geom_line() +
-    facet_grid(metric ~ ., scales = "free_y")
+    facet_grid(metric ~ ., scales = "free_y") +
+    theme(legend.position = "bottom")
 
 ```
 
@@ -470,9 +528,9 @@ if(nrow(problemURLs) == 0){
 
 ```
 
-# Quality Score analysis
+# Quality Score analysis {.tabset}
 
-```{r quality score analysis, echo=FALSE, eval=FALSE}
+```{r quality score analysis, echo=FALSE, message=FALSE, results="asis", eval=FALSE}
 
 chunk12Body <- statement(select=c("Date","CampaignName","AdGroupName","Criteria","Impressions","HasQualityScore","CreativeQualityScore",
                                    "PostClickQualityScore","SearchPredictedCtr","QualityScore"),
@@ -483,11 +541,16 @@ chunk12Body <- statement(select=c("Date","CampaignName","AdGroupName","Criteria"
 
 chunk12Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk12Body)
 
-chunk12Data %>% group_by(Adrelevance) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n))
-chunk12Data %>% group_by(Landingpageexperience) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n))
-chunk12Data %>% group_by(Expectedclickthroughrate) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n))
-chunk12Data %>% group_by(Qualityscore) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n))
+cat("\n## Ad Relevance\n")
+kable(chunk12Data %>% group_by(Adrelevance) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n)))
+cat("\n## LP Experience\n")
+kable(chunk12Data %>% group_by(Landingpageexperience) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n)))
+cat("\n## Expected CTR\n")
+kable(chunk12Data %>% group_by(Expectedclickthroughrate) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n)))
+cat("\n## Total QS\n")
+kable(chunk12Data %>% group_by(Qualityscore) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n)))
 
+cat("\n## Weighted QS\n")
 plotData <- chunk12Data %>% mutate(QSImpr = as.numeric(Qualityscore) * Impressions) %>% group_by(Campaign, Adgroup) %>%
     summarise(QSImpr = sum(QSImpr), Impressions = sum(Impressions)) %>% ungroup() %>% mutate(weightedQS = QSImpr/Impressions) 
 
@@ -518,13 +581,14 @@ chunk13_long <- gather(chunk13Data, metric, value, Impressions:ConversionRate)
 
 ggplot(chunk13_long, aes(y = value, x = Date, color = MatchType)) +
     geom_line() +
-    facet_grid(metric ~ ., scales = "free_y")
+    facet_grid(metric ~ ., scales = "free_y") +
+    theme(legend.position = "bottom")
 
 ```
 
 # Ad/Keyword Performance
 
-```{r adKeywords performance, echo=FALSE, eval=FALSE}
+```{r adKeywords performance, echo=FALSE, message = FALSE, eval=FALSE}
 
 ninetyDaysAgo <- today() - days(90)
 
@@ -548,7 +612,7 @@ plot_ly(data = chunk14Data, x = ~Cost, y = ~CPA, size = ~Conversions,
 
 # 3x3 Performance Segments {.tabset}
 
-```{r performance segments matrix, echo=FALSE, eval=FALSE}
+```{r performance segments matrix, echo=FALSE, message=FALSE, eval=FALSE}
 
 ninetyDaysAgo <- today() - days(90)
 
@@ -564,7 +628,7 @@ names(chunk15Data) <- c("Keyword","CPA","Impressions","QS","Cost","Conversions",
 
 ## Converters
 
-```{r converters matrix, echo=FALSE, eval=FALSE}
+```{r converters matrix, echo=FALSE, message=FALSE, eval=FALSE}
 
 hasConversions <- chunk15Data %>% filter(Conversions > 0)
 
@@ -575,7 +639,7 @@ plot_ly(data = hasConversions, x = ~log(Conversions), y = ~CPA, color = ~Positio
 
 ## Non-converters
 
-```{r non-converters matrix, echo=FALSE, eval=FALSE}
+```{r non-converters matrix, echo=FALSE, message=FALSE, eval=FALSE}
 
 notConverting <- chunk15Data %>% filter(Conversions == 0, Cost > 0)
 
@@ -586,7 +650,7 @@ plot_ly(data = notConverting, x = ~log(Cost), y = ~CPC, color = ~Position, size 
 
 ## Clickless
 
-```{r clickless matrix, echo=FALSE, eval=FALSE}
+```{r clickless matrix, echo=FALSE, message=FALSE, eval=FALSE}
 
 clickless <- chunk15Data %>% filter(Cost == 0, Impressions > 0)
 
@@ -595,9 +659,9 @@ plot_ly(data = clickless, x = ~log(Impressions), y = ~QS, color = ~Position, siz
                       "<br>QS: ", QS, "<br>Position: ", Position))
 ```
 
-# Anomaly detection
+# Anomaly detection {.tabset}
 
-```{r anomaly detection, echo=FALSE, eval=FALSE}
+```{r anomaly detection, echo=FALSE, results="asis", eval=FALSE}
 
 ninetyDaysAgo <- today() - days(90)
 
@@ -613,26 +677,32 @@ names(chunk16Data) <- c("Date","HourOfDay","Clicks","Conversions","CPA","CPC","S
 anomalyData <- chunk16Data %>% mutate(DateTime = ymd_hms(paste0(Date," ",HourOfDay,":00:00")))
 anomalyData <- anomalyData %>% arrange(DateTime)
 
+cat("\n## Clicks\n")
 anomClicks <- AnomalyDetectionTs(anomalyData[,c("DateTime","Clicks")], direction='both',
                                  plot=TRUE, e_value=TRUE, max_anoms=0.01, ylabel = "Clicks")
 anomClicks$plot
 
+cat("\n\n## Conversions\n")
 anomConversions <- AnomalyDetectionTs(anomalyData[,c("DateTime","Conversions")], direction='both',
                                  plot=TRUE, e_value=TRUE, max_anoms=0.01, ylabel = "Conversions")
 anomConversions$plot
 
+cat("\n\n## CPA\n")
 anomCPA <- AnomalyDetectionTs(anomalyData[,c("DateTime","CPA")], direction='both',
                                  plot=TRUE, e_value=TRUE, max_anoms=0.01, ylabel = "CPA")
 anomCPA$plot
 
+cat("\n\n## CPC\n")
 anomCPC <- AnomalyDetectionTs(anomalyData[,c("DateTime","CPC")], direction='both',
                                  plot=TRUE, e_value=TRUE, max_anoms=0.01, ylabel = "CPC")
 anomCPC$plot
 
+cat("\n\n## IS\n")
 anomSearchIS <- AnomalyDetectionTs(anomalyData[,c("DateTime","SearchIS")], direction='both',
                                  plot=TRUE, e_value=TRUE, max_anoms=0.01, ylabel = "SearchIS")
 anomSearchIS$plot
 
+cat("\n\n## Position\n")
 anomPosition <- AnomalyDetectionTs(anomalyData[,c("DateTime","Position")], direction='both',
                                  plot=TRUE, e_value=TRUE, max_anoms=0.01, ylabel = "Position")
 anomPosition$plot
@@ -641,7 +711,7 @@ anomPosition$plot
 
 # Google Trends: Top 5 keywords
 
-```{r google trends, echo=FALSE, eval = FALSE}
+```{r google trends, echo=FALSE, eval=FALSE}
 
 ninetyDaysAgo <- today() - days(90)
 
@@ -679,17 +749,19 @@ treemap(chunk18Data,
         index="Campaign",  
         vSize = "Cost",  
         vColor = "CPA",
+        palette = "RdYlBu",
         type="value")
 
 ```
 
-# Geoperformance
+# Geoperformance {.tabset}
 
-```{r geoperformance, echo=FALSE, eval=FALSE}
+```{r geoperformance, echo=FALSE, message=FALSE, results="asis", eval=FALSE}
 
 counties <- readOGR("misc","Census2011_Admin_Counties_generalised20m")
-locationIds <- read.csv("misc/AdWords_API_Location_Criteria.csv")
-names(locationIds) <- c("id","name","longName","parentId","countryCode","targetType","status")
+
+locationIds <- data.frame(name = c("Limerick City","Limerick County","North Tipperary","South Tipperary","Waterford City","Waterford County","Galway City","Galway County","Leitrim County","Mayo County","Roscommon County","Sligo County","Cavan County","Donegal County","Monaghan County","Carlow County","Dublin City","South Dublin","Fingal","Dún Laoghaire-Rathdown","Kildare County","Kilkenny County","Laois County","Longford County","Louth County","Meath County","Offaly County","Westmeath County","Wexford County","Wicklow County","Clare County","Cork City","Cork County","Kerry County"),
+                          id = c(9047195,9069531,9047196,20493,9047198,20494,9047194,9069529,21317,20489,20491,20492,20476,20479,20488,20477,20478,9047197,9047193,9047192,20481,20482,20486,21316,21316,20487,20490,20495,20497,20496,20475,9047191,9070283,20483))
 
 ninetyDaysAgo <- today() - days(90)
 
@@ -707,18 +779,22 @@ mergedAdWords$name <- str_replace(mergedAdWords$name, "County (.*)", "\\1 County
 
 mergedForPlot <- sp::merge(counties, mergedAdWords, by.x = "COUNTYNAME", by.y = "name")
 
+cat("\n\n## Conversions\n")
 tm_shape(mergedForPlot) +
     tm_fill(col = "Conversions") +
     tm_text("COUNTYNAME")
 
+cat("\n\n## CPC\n")
 tm_shape(mergedForPlot) +
     tm_fill(col = "CPC") +
     tm_text("COUNTYNAME")
 
+cat("\n\n## Cost\n")
 tm_shape(mergedForPlot) +
     tm_fill(col = "Cost") +
     tm_text("COUNTYNAME")
 
+cat("\n\n## CPA\n")
 tm_shape(mergedForPlot) +
     tm_fill(col = "CPA") +
     tm_text("COUNTYNAME")
