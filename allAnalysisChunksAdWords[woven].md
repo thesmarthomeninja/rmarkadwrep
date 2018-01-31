@@ -11,7 +11,10 @@ output:
     fig_height: 7
     fig_align: "center"
     df_print: tibble
+    theme: sandstone
 ---
+
+
 
 
 # Campaign performance {.tabset}
@@ -85,81 +88,9 @@ output:
 
 
 
-# Quality Score analysis
+# Quality Score analysis {.tabset}
 
 
-```
-## Ad Relevance
-```
-
-
-
-|Adrelevance   |   n|      freq|
-|:-------------|---:|---------:|
-|Below average | 298| 0.6549451|
-|Above average | 140| 0.3076923|
-|Average       |  17| 0.0373626|
-
-```
-## LP Experience
-```
-
-
-
-|Landingpageexperience |   n|      freq|
-|:---------------------|---:|---------:|
-|Above average         | 393| 0.8637363|
-|Average               |  55| 0.1208791|
-|Below average         |   7| 0.0153846|
-
-```
-## Expected CTR
-```
-
-
-
-|Expectedclickthroughrate |   n|      freq|
-|:------------------------|---:|---------:|
-|Average                  | 175| 0.3846154|
-|Below average            | 142| 0.3120879|
-|Above average            | 138| 0.3032967|
-
-```
-## Total QS
-```
-
-
-
-|Qualityscore |   n|      freq|
-|:------------|---:|---------:|
-|6            | 117| 0.2571429|
-|5            | 101| 0.2219780|
-|8            |  81| 0.1780220|
-|10           |  78| 0.1714286|
-|3            |  32| 0.0703297|
-|7            |  27| 0.0593407|
-|9            |  13| 0.0285714|
-|1            |   5| 0.0109890|
-|4            |   1| 0.0021978|
-
-```
-## Weighted QS
-```
-
-```
-## Warning in normalizePath(path.expand(path), winslash, mustWork): path[1]=".
-## \webshot17e01ed662f2.png": The system cannot find the file specified
-```
-
-```
-## Warning in file(con, "rb"): cannot open file 'C:\Users\ZSELIN~1\AppData
-## \Local\Temp\Rtmpywx9Mp\file17e069943ec9\webshot17e01ed662f2.png': No such
-## file or directory
-```
-
-```
-## Error in file(con, "rb"): cannot open the connection
-```
 
 # Match type performance
 
@@ -185,7 +116,7 @@ output:
 
 
 
-# Anomaly detection
+# Anomaly detection {.tabset}
 
 
 
@@ -197,6 +128,6 @@ output:
 
 
 
-# Geoperformance
+# Geoperformance {.tabset}
 
 
