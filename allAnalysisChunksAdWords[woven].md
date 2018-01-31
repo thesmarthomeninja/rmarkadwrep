@@ -17,42 +17,21 @@ output:
 
 
 
+```
+## Error: <text>:20:42: unexpected ','
+## 19: #names(accountPerformance) <- c("Date","DayOfWeek","HourOfDay","Device","Clicks","Impressions","Conversions","Cost","SearchIS",
+## 20:                                "Position",
+##                                              ^
+```
 # Campaign performance {.tabset}
-
-## Month-to-date
-
-
-
-## Last 30 days
-
-
-
-## Last 60 days
-
-
-
-## Last 90 days
 
 
 
 # Metrics correlation plot
 
 
+
 # Ad Scheduling Heatmaps {.tabset}
-
-## Impressions
-
-
-
-## Search Impression Share
-
-
-
-## Conversions
-
-
-
-## CPA
 
 
 
@@ -117,7 +96,6 @@ output:
 
 
 # Anomaly detection {.tabset}
-
 
 
 # Google Trends: Top 5 keywords
