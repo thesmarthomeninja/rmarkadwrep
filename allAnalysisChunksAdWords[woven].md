@@ -17,12 +17,6 @@ output:
 
 
 
-```
-## Error: <text>:20:42: unexpected ','
-## 19: #names(accountPerformance) <- c("Date","DayOfWeek","HourOfDay","Device","Clicks","Impressions","Conversions","Cost","SearchIS",
-## 20:                                "Position",
-##                                              ^
-```
 # Campaign performance {.tabset}
 
 

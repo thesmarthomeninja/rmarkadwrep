@@ -77,39 +77,18 @@ aYearAgo <- today() - days(365)
 #                               "Position","RankLostIS","BudgetLostIS","ExactMatchIS")
 #
 #
-#chunk12Body <- statement(select=c("Date","CampaignName","AdGroupName","Criteria","Impressions","HasQualityScore","CreativeQualityScore",
-#                                   "PostClickQualityScore","SearchPredictedCtr","QualityScore"),
-#                         report="KEYWORDS_PERFORMANCE_REPORT",
-#                         where="HasQualityScore = TRUE",
-#                         start=yesterday,
-#                         end=yesterday)
-#
-#chunk12Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk12Body)
-#
-#
-#chunk13Body <- statement(select=c("Date","KeywordMatchType","Impressions","Clicks","Cost","Conversions"),
+#keywordPerformanceQuery <- statement(select=c("Date","CampaignName","AdGroupName","Criteria","KeywordMatchType",
+#                                              "Impressions","Clicks","Cost","Conversions","HasQualityScore",
+#                                              "CreativeQualityScore","PostClickQualityScore","SearchPredictedCtr",
+#                                              "AveragePosition","QualityScore","SearchImpressionShare","HasQualityScore"),
 #                         report="KEYWORDS_PERFORMANCE_REPORT",
 #                         start=ninetyDaysAgo,
 #                         end=yesterday)
 #
-#chunk13Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk13Body)
-#
-#
-#chunk15Body <- statement(select=c("Criteria","CostPerConversion","Impressions","QualityScore",
-#                                   "Cost","Conversions", "AveragePosition", "AverageCpc"),
-#                         report="KEYWORDS_PERFORMANCE_REPORT",
-#                         start=ninetyDaysAgo,
-#                         end=yesterday)
-#
-#chunk15Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk15Body)
-#
-#chunk17Body <- statement(select=c("Criteria","Impressions","SearchImpressionShare"),
-#                         report="KEYWORDS_PERFORMANCE_REPORT",
-#                         start=ninetyDaysAgo,
-#                         end=yesterday)
-#
-#chunk17Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk17Body)
-#
+#keywordPerformance <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=keywordPerformanceQuery)
+#names(keywordPerformance) <- c("Date","Campaign","AdGroup","Keyword","MatchType","Impressions","Clicks","Cost","Conversions",
+#                               "HasQualityScore","AdRelevance","LPExperience","ExpectedCTR","Position","QS","SearchIS")
+
 #
 #chunk7Body <- statement(select=c("Query","Clicks","Impressions","Conversions","Cost"),
 #                         report="SEARCH_QUERY_PERFORMANCE_REPORT",
@@ -537,20 +516,22 @@ if(nrow(problemURLs) == 0){
 
 ```{r quality score analysis, echo=FALSE, message=FALSE, results="asis", eval=FALSE}
 
+qualityScoreAnalysis <- keywordPerformance %>% filter(Date == yesterday, HasQualityScore == "true")
+
 cat("\n## Ad Relevance\n")
-kable(chunk12Data %>% group_by(Adrelevance) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n)))
+kable(qualityScoreAnalysis %>% group_by(AdRelevance) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n)))
 cat("\n## LP Experience\n")
-kable(chunk12Data %>% group_by(Landingpageexperience) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n)))
+kable(qualityScoreAnalysis %>% group_by(LPExperience) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n)))
 cat("\n## Expected CTR\n")
-kable(chunk12Data %>% group_by(Expectedclickthroughrate) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n)))
+kable(qualityScoreAnalysis %>% group_by(ExpectedCTR) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n)))
 cat("\n## Total QS\n")
-kable(chunk12Data %>% group_by(Qualityscore) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n)))
+kable(qualityScoreAnalysis %>% group_by(QS) %>% summarize(n = n()) %>% mutate(freq = n/sum(n)) %>% arrange(desc(n)))
 
 cat("\n## Weighted QS\n")
-plotData <- chunk12Data %>% mutate(QSImpr = as.numeric(Qualityscore) * Impressions) %>% group_by(Campaign, Adgroup) %>%
+plotData <- qualityScoreAnalysis %>% mutate(QSImpr = as.numeric(QS) * Impressions) %>% group_by(Campaign, AdGroup) %>%
     summarise(QSImpr = sum(QSImpr), Impressions = sum(Impressions)) %>% ungroup() %>% mutate(weightedQS = QSImpr/Impressions) 
 
-plot <- plotData %>% ggplot(aes(x = weightedQS, y = 1)) + geom_text(aes(label = Adgroup),position = position_jitter(0.7), size = 1.5)
+plot <- plotData %>% ggplot(aes(x = weightedQS, y = 1)) + geom_text(aes(label = AdGroup),position = position_jitter(0.7), size = 1.5)
 ggplotly(plot)
 
 ```
@@ -559,15 +540,13 @@ ggplotly(plot)
 
 ```{r match type performance, echo=FALSE, eval=FALSE}
 
-names(chunk13Data) <- c("Date","MatchType","Impressions","Clicks","Cost","Conversions")
-
-chunk13Data <- chunk13Data %>% group_by(Date, MatchType) %>%
+matchTypePerformance <- keywordPerformance %>% group_by(Date, MatchType) %>%
     summarize(Impressions = sum(Impressions), Clicks = sum(Clicks), Cost = sum(Cost),Conversions = sum(Conversions)) %>%
     mutate(Ctr = Clicks/Impressions, CPC = Cost/Clicks, CPA = Cost/Conversions, ConversionRate = Conversions/Clicks)
 
-chunk13_long <- gather(chunk13Data, metric, value, Impressions:ConversionRate)
+matchTypePerformanceLong <- gather(matchTypePerformance, metric, value, Impressions:ConversionRate)
 
-ggplot(chunk13_long, aes(y = value, x = Date, color = MatchType)) +
+ggplot(matchTypePerformanceLong, aes(y = value, x = Date, color = MatchType)) +
     geom_line() +
     facet_grid(metric ~ ., scales = "free_y") +
     theme(legend.position = "bottom")
@@ -589,43 +568,34 @@ plot_ly(data = chunk14Data, x = ~Cost, y = ~CPA, size = ~Conversions,
 
 # 3x3 Performance Segments {.tabset}
 
-```{r performance segments matrix, echo=FALSE, message=FALSE, eval=FALSE}
+```{r performance segments matrices, echo=FALSE, message=FALSE, warning=FALSE, results="asis", eval=FALSE}
 
-names(chunk15Data) <- c("Keyword","CPA","Impressions","QS","Cost","Conversions","Position","CPC")
+performanceSegments <- keywordPerformance %>% mutate(ImpQS = Impressions * as.numeric(QS), ImpPos = Impressions * Position) %>%
+    group_by(Keyword) %>% summarise(CPA = sum(Cost)/sum(Conversions), Impressions = sum(Impressions), ImpQS = sum(ImpQS),
+                                    Cost = sum(Cost), Conversions = sum(Conversions), ImpPos = sum(ImpPos), CPC = sum(Cost)/sum(Clicks)) %>%
+    mutate(Position = ImpPos/Impressions, QS = ImpQS/Impressions)
 
-```
-
-## Converters
-
-```{r converters matrix, echo=FALSE, message=FALSE, eval=FALSE}
-
-hasConversions <- chunk15Data %>% filter(Conversions > 0)
+cat("\n\n## Converters\n")
+hasConversions <- performanceSegments %>% filter(Conversions > 0)
 
 plot_ly(data = hasConversions, x = ~log(Conversions), y = ~CPA, color = ~Position, size = ~Position,
         text = ~paste("Keyword: ", Keyword, "<br>Conversions: ", Conversions,
                       "<br>CPA: ", CPA, "<br>Position: ", Position))
-```
 
-## Non-converters
-
-```{r non-converters matrix, echo=FALSE, message=FALSE, eval=FALSE}
-
-notConverting <- chunk15Data %>% filter(Conversions == 0, Cost > 0)
+cat("\n\n## Non-converters\n")
+notConverting <- performanceSegments %>% filter(Conversions == 0, Cost > 0)
 
 plot_ly(data = notConverting, x = ~log(Cost), y = ~CPC, color = ~Position, size = ~Position,
         text = ~paste("Keyword: ", Keyword, "<br>Cost: ", Cost,
                       "<br>CPC: ", CPC, "<br>Position: ", Position))
-```
 
-## Clickless
-
-```{r clickless matrix, echo=FALSE, message=FALSE, eval=FALSE}
-
-clickless <- chunk15Data %>% filter(Cost == 0, Impressions > 0)
+cat("\n\n## Clickless\n")
+clickless <- performanceSegments %>% filter(Cost == 0, Impressions > 0)
 
 plot_ly(data = clickless, x = ~log(Impressions), y = ~QS, color = ~Position, size = ~Position, type = 'scatter',
         text = ~paste("Keyword: ", Keyword, "<br>Impressions: ", Impressions,
                       "<br>QS: ", QS, "<br>Position: ", Position))
+
 ```
 
 # Anomaly detection {.tabset}
@@ -671,12 +641,15 @@ anomPosition$plot
 
 ```{r google trends, echo=FALSE, eval=FALSE}
 
-names(chunk17Data) <- c("Keyword","Impressions","SearchIS")
+googleTrends <- keywordPerformance %>% mutate(ImpIS = Impressions * SearchIS)  %>% group_by(Keyword) %>%
+    summarise(Impressions = sum(Impressions), ImpIS = sum(ImpIS)) %>%
+    ungroup() %>%
+    mutate(SearchIS = ImpIS / Impressions) 
 
-lookupTerms <- chunk17Data %>% mutate(impVolume = Impressions / SearchIS) %>%
+lookupTerms <- googleTrends %>% mutate(impVolume = Impressions / SearchIS) %>%
     arrange(desc(impVolume)) %>% head(5) %>% select(Keyword)
 
-res <- gtrends(str_replace_all(lookupTerms[,1], "\\+",""), geo = "IE")
+res <- gtrends(str_replace_all(lookupTerms[["Keyword"]], "\\+",""), geo = "IE")
 plot(res)
 
 ```
