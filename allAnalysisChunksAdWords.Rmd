@@ -64,6 +64,7 @@ aYearAgo <- today() - days(365)
 #campaignPerformance <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=campaignPerformanceQuery)
 #names(campaignPerformance) <- c("Date","Campaign", "Conversions", "Cost")
 
+
 #accountPerformanceQuery <- statement(select=c("Date","DayOfWeek","HourOfDay","Device","Clicks","Impressions",
 #                                         "Conversions","Cost", "SearchImpressionShare", "AveragePosition",
 #                                         "SearchRankLostImpressionShare","SearchBudgetLostImpressionShare",
@@ -75,8 +76,8 @@ aYearAgo <- today() - days(365)
 #accountPerformance <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=accountPerformanceQuery)
 #names(accountPerformance) <- c("Date","DayOfWeek","HourOfDay","Device","Clicks","Impressions","Conversions","Cost","SearchIS",
 #                               "Position","RankLostIS","BudgetLostIS","ExactMatchIS")
-#
-#
+
+
 #keywordPerformanceQuery <- statement(select=c("Date","CampaignName","AdGroupName","Criteria","KeywordMatchType",
 #                                              "Impressions","Clicks","Cost","Conversions","HasQualityScore",
 #                                              "CreativeQualityScore","PostClickQualityScore","SearchPredictedCtr",
@@ -88,43 +89,43 @@ aYearAgo <- today() - days(365)
 #keywordPerformance <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=keywordPerformanceQuery)
 #names(keywordPerformance) <- c("Date","Campaign","AdGroup","Keyword","MatchType","Impressions","Clicks","Cost","Conversions",
 #                               "HasQualityScore","AdRelevance","LPExperience","ExpectedCTR","Position","QS","SearchIS")
-
 #
-#chunk7Body <- statement(select=c("Query","Clicks","Impressions","Conversions","Cost"),
+#
+#searchQueryPerformanceQuery <- statement(select=c("Query","Clicks","Impressions","Conversions","Cost"),
 #                         report="SEARCH_QUERY_PERFORMANCE_REPORT",
 #                         start=ninetyDaysAgo,
 #                         end=yesterday)
 #
-#chunk7Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk7Body)
+#searchQueryPerformance <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=searchQueryPerformanceQuery)
 #
 #
-#chunk11Body <- statement(select=c('EffectiveFinalUrl'),
+#finalUrlPerformanceQuery <- statement(select=c('EffectiveFinalUrl'),
 #                         report="FINAL_URL_REPORT",
 #                         where="Impressions > 0",
 #                         start=ninetyDaysAgo,
 #                         end=yesterday)
 #
-#chunk11Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk11Body)
+#finalUrlPerformance <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=finalUrlPerformanceQuery)
 #
 #
-#chunk14Body <- statement(select=c('CampaignName','AdGroupName','Id','Description','HeadlinePart2','CriterionId',
+#adPerformanceQuery <- statement(select=c('CampaignName','AdGroupName','Id','Description','HeadlinePart2','CriterionId',
 #                                   'Cost',"Conversions","CostPerConversion"),
 #                         report="AD_PERFORMANCE_REPORT",
 #                         where="Cost > 100000000 AND AdNetworkType1 = SEARCH",
 #                         start=ninetyDaysAgo,
 #                         end=yesterday)
 #
-#chunk14Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk14Body)
+#adPerformance <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=adPerformanceQuery)
+#names(adPerformance) <- c("Campaign", "AdGroup", "AdId", "Description", "Headline2", "KeywordId",
+#                         "Cost", "Conversions", "CPA")
 #
-#chunk19Body <- statement(select=c("CountryCriteriaId","RegionCriteriaId","Cost","Conversions","AverageCpc", "CostPerConversion"),
+#
+#geoPerformanceQuery <- statement(select=c("CountryCriteriaId","RegionCriteriaId","Cost","Conversions","AverageCpc", "CostPerConversion"),
 #                         report="GEO_PERFORMANCE_REPORT",
 #                         start=ninetyDaysAgo,
 #                         end=yesterday)
 #
-#chunk19Data <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=chunk19Body)
-
-
-
+#geoPerformance <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=geoPerformanceQuery)
 
 ```
 # Campaign performance {.tabset}
@@ -221,22 +222,22 @@ ggplot(accountPerformanceHeatmaps, aes(x=HourOfDay, y=DayOfWeek, z=CPA)) + geom_
 
 # Search Terms N-Grams {.tabset}
 
-```{r tidy search terms, echo=FALSE, eval=FALSE}
+```{r tidy search terms, echo=FALSE, message=FALSE, eval=FALSE}
 
 data(stop_words)
 
-unigrams <- chunk7Data %>% unnest_tokens(word, Searchterm) %>% anti_join(stop_words) %>%
+unigrams <- searchQueryPerformance %>% unnest_tokens(word, Searchterm) %>% anti_join(stop_words) %>%
     group_by(word) %>%
     summarize(Clicks=sum(Clicks), Impressions=sum(Impressions), Conversions=sum(Conversions), Cost=sum(Cost),
               Ctr=sum(Clicks)/sum(Impressions), ConversionRate=sum(Conversions)/sum(Clicks), Cpa=sum(Cost)/sum(Conversions),
               AvgCpc = sum(Cost)/sum(Clicks))
 
-bigrams <- chunk7Data %>% unnest_tokens(bigram, Searchterm, token="ngrams", n=2) %>% group_by(bigram) %>%
+bigrams <- searchQueryPerformance %>% unnest_tokens(bigram, Searchterm, token="ngrams", n=2) %>% group_by(bigram) %>%
     summarize(Clicks=sum(Clicks), Impressions=sum(Impressions), Conversions=sum(Conversions),
               Cost=sum(Cost), Ctr=sum(Clicks)/sum(Impressions), ConversionRate=sum(Conversions)/sum(Clicks),
               Cpa=sum(Cost)/sum(Conversions), AvgCpc = sum(Cost)/sum(Clicks))
 
-trigrams <- chunk7Data %>% unnest_tokens(trigram, Searchterm, token="ngrams", n=3) %>% group_by(trigram) %>%
+trigrams <- searchQueryPerformance %>% unnest_tokens(trigram, Searchterm, token="ngrams", n=3) %>% group_by(trigram) %>%
     summarize(Clicks=sum(Clicks), Impressions=sum(Impressions), Conversions=sum(Conversions),
               Cost=sum(Cost), Ctr=sum(Clicks)/sum(Impressions), ConversionRate=sum(Conversions)/sum(Clicks),
               Cpa=sum(Cost)/sum(Conversions), AvgCpc = sum(Cost)/sum(Clicks))
@@ -245,7 +246,7 @@ trigrams <- chunk7Data %>% unnest_tokens(trigram, Searchterm, token="ngrams", n=
 
 ## Unigrams
 
-```{r unigrams, echo=FALSE, eval=FALSE}
+```{r unigrams, echo=FALSE, message=FALSE, eval=FALSE}
 
 pu_imp <- unigrams %>% top_n(10, Impressions) %>% ggplot(aes(y=Impressions, x=reorder(word, Impressions))) +
     geom_bar(stat = "identity") +
@@ -301,7 +302,7 @@ plot_grid(pu_imp, pu_clicks, pu_ctr, pu_cpc, pu_cost, pu_conv, pu_cpa, pu_cr, nc
 
 ## Bigrams
 
-```{r bigrams, echo=FALSE, eval=FALSE}
+```{r bigrams, echo=FALSE, message=FALSE, eval=FALSE}
 
 pb_imp <- bigrams %>% top_n(10, Impressions) %>% ggplot(aes(y=Impressions, x=reorder(bigram, Impressions))) +
     geom_bar(stat = "identity") +
@@ -357,7 +358,7 @@ plot_grid(pb_imp, pb_clicks, pb_ctr, pb_cpc, pb_cost, pb_conv, pb_cpa, pb_cr, nc
 
 ## Trigrams
 
-```{r trigrams, echo=FALSE, eval=FALSE}
+```{r trigrams, echo=FALSE, message=FALSE, eval=FALSE}
 
 pt_imp <- trigrams %>% top_n(10, Impressions) %>% ggplot(aes(y=Impressions, x=reorder(trigram, Impressions))) +
     geom_bar(stat = "identity") +
@@ -491,11 +492,11 @@ longAccountPerformanceDevice %>% ggplot(aes(x = Date, y = value, color = Device)
 
 # 404 Checker
 
-```{r 404 checker, echo=FALSE, eval=FALSE}
+```{r 404 checker, echo=FALSE, results="asis", eval=FALSE}
 
 responseCodes <- character()
 
-for(i in chunk11Data$FinalURL){
+for(i in finalUrlPerformance$FinalURL){
     url <- as.character(i)
     response <- GET(i)
     Sys.sleep(sample(1:5, 1))
@@ -504,10 +505,10 @@ for(i in chunk11Data$FinalURL){
 
 responseCodes <- data.frame(ResponseCode = responseCodes)
 
-problemURLs <- cbind(chunk11Data, responseCodes) %>% filter(responseCodes != 200)
+problemURLs <- cbind(finalUrlPerformance, responseCodes) %>% filter(responseCodes != 200)
 
 if(nrow(problemURLs) == 0){
-    message("All Final URLs are ok.")
+    cat("All Final URLs are ok.")
 }else{ problemURLs }
 
 ```
@@ -557,10 +558,7 @@ ggplot(matchTypePerformanceLong, aes(y = value, x = Date, color = MatchType)) +
 
 ```{r adKeywords performance, echo=FALSE, message = FALSE, eval=FALSE}
 
-names(chunk14Data) <- c("Campaign", "AdGroup", "AdId", "Description", "Headline2", "KeywordId",
-                         "Cost", "Conversions", "CPA")
-
-plot_ly(data = chunk14Data, x = ~Cost, y = ~CPA, size = ~Conversions,
+plot_ly(data = adPerformance, x = ~Cost, y = ~CPA, size = ~Conversions,
             text = ~paste("Campaign: ", Campaign, "<br>AdGroup: ", AdGroup, "<br>Headline2: ",
                             Headline2, "<br>Description: ", Description ,"<br>KeywordId: ", KeywordId))
 
@@ -602,9 +600,18 @@ plot_ly(data = clickless, x = ~log(Impressions), y = ~QS, color = ~Position, siz
 
 ```{r anomaly detection, echo=FALSE, results="asis", eval=FALSE}
 
-names(chunk16Data) <- c("Date","HourOfDay","Clicks","Conversions","CPA","CPC","SearchIS","Position")
-anomalyData <- chunk16Data %>% mutate(DateTime = ymd_hms(paste0(Date," ",HourOfDay,":00:00")))
+anomalyData <- accountPerformance %>% filter(Date >= ninetyDaysAgo) %>%
+    mutate(DateTime = ymd_hms(paste0(Date," ",HourOfDay,":00:00")),
+                                             ImpIS = Impressions * SearchIS, ImpPosition = Impressions * Position) %>%
+    group_by(DateTime, HourOfDay) %>% summarise(Clicks = sum(Clicks), Conversions = sum(Conversions),
+                                                CPA = sum(Cost)/sum(Conversions), CPC = sum(Cost)/sum(Clicks),
+                                                ImpIS = sum(ImpIS), ImpPosition = sum(ImpPosition),
+                                                Impressions = sum(Impressions)) %>%
+    mutate(SearchIS = ImpIS / Impressions, Position = ImpPosition / Impressions)
+
 anomalyData <- anomalyData %>% arrange(DateTime)
+anomalyData[!is.finite(anomalyData$CPA),"CPA"] <- 0
+anomalyData[is.na(anomalyData$SearchIS),"SearchIS"] <- 0
 
 cat("\n## Clicks\n")
 anomClicks <- AnomalyDetectionTs(anomalyData[,c("DateTime","Clicks")], direction='both',
@@ -637,6 +644,7 @@ anomPosition <- AnomalyDetectionTs(anomalyData[,c("DateTime","Position")], direc
 anomPosition$plot
 
 ``` 
+
 # Google Trends: Top 5 keywords
 
 ```{r google trends, echo=FALSE, eval=FALSE}
@@ -671,17 +679,17 @@ treemap(campaignPerformance90,
 
 # Geoperformance {.tabset}
 
-```{r geoperformance, echo=FALSE, message=FALSE, results="asis", eval=FALSE}
+```{r geoperformance, echo=FALSE, message=FALSE, warning=FALSE, results="asis", eval=FALSE}
 
-counties <- readOGR("misc","Census2011_Admin_Counties_generalised20m")
+counties <- readOGR("misc","Census2011_Admin_Counties_generalised20m", verbose=FALSE)
 
 locationIds <- data.frame(name = c("Limerick City","Limerick County","North Tipperary","South Tipperary","Waterford City","Waterford County","Galway City","Galway County","Leitrim County","Mayo County","Roscommon County","Sligo County","Cavan County","Donegal County","Monaghan County","Carlow County","Dublin City","South Dublin","Fingal","Dún Laoghaire-Rathdown","Kildare County","Kilkenny County","Laois County","Longford County","Louth County","Meath County","Offaly County","Westmeath County","Wexford County","Wicklow County","Clare County","Cork City","Cork County","Kerry County"),
                           id = c(9047195,9069531,9047196,20493,9047198,20494,9047194,9069529,21317,20489,20491,20492,20476,20479,20488,20477,20478,9047197,9047193,9047192,20481,20482,20486,21316,21316,20487,20490,20495,20497,20496,20475,9047191,9070283,20483))
 
-names(chunk19Data) <- c("Country","Region","Cost","Conversions","CPC","CPA")
-chunk19Data$Region <- as.numeric(chunk19Data$Region)
+names(geoPerformance) <- c("Country","Region","Cost","Conversions","CPC","CPA")
+geoPerformance$Region <- as.numeric(geoPerformance$Region)
 
-mergedAdWords <- inner_join(chunk19Data, locationIds, by = c("Region"="id"))
+mergedAdWords <- inner_join(geoPerformance, locationIds, by = c("Region"="id"))
 mergedAdWords$name <- str_replace(mergedAdWords$name, "County (.*)", "\\1 County")
 
 mergedForPlot <- sp::merge(counties, mergedAdWords, by.x = "COUNTYNAME", by.y = "name")
@@ -705,6 +713,5 @@ cat("\n\n## CPA\n")
 tm_shape(mergedForPlot) +
     tm_fill(col = "CPA") +
     tm_text("COUNTYNAME")
-
 
 ```

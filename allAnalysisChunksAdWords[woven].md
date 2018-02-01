@@ -77,19 +77,8 @@ output:
 
 
 
-## Converters
-
-
-
-## Non-converters
-
-
-
-## Clickless
-
-
-
 # Anomaly detection {.tabset}
+
 
 
 # Google Trends: Top 5 keywords
