@@ -20,19 +20,7 @@ library(RAdwords)
 library(lubridate)
 library(ggplot2)
 library(tidyverse)
-library(corrplot)
-library(scales)
-library(tidytext)
-library(cowplot)
-library(httr)
 library(plotly)
-library(AnomalyDetection)
-library(gtrendsR)
-library(treemap)
-library(tmap)
-library(sp)
-library(rgdal)
-library(ggrepel)
 library(rmarkdown)
 library(knitr)
 
@@ -54,7 +42,7 @@ aYearAgo <- today() - days(365)
 
 ```
 
-```{r data grabs, warning=FALSE, echo=FALSE, eval=TRUE}
+```{r data grabs, warning=FALSE, echo=FALSE, eval=FALSE}
 
 #campaignPerformanceQuery <- statement(select=c("Date","CampaignName","Conversions","Cost"),
 #                         report="CAMPAIGN_PERFORMANCE_REPORT",
@@ -75,7 +63,6 @@ aYearAgo <- today() - days(365)
 #
 #accountPerformance <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=accountPerformanceQuery)
 #names(accountPerformance) <- c("Date","DayOfWeek","HourOfDay","Device","Clicks","Impressions","Conversions","Cost","SearchIS",
-#                               "Position","RankLostIS","BudgetLostIS","ExactMatchIS")
 
 
 #keywordPerformanceQuery <- statement(select=c("Date","CampaignName","AdGroupName","Criteria","KeywordMatchType",
@@ -89,16 +76,16 @@ aYearAgo <- today() - days(365)
 #keywordPerformance <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=keywordPerformanceQuery)
 #names(keywordPerformance) <- c("Date","Campaign","AdGroup","Keyword","MatchType","Impressions","Clicks","Cost","Conversions",
 #                               "HasQualityScore","AdRelevance","LPExperience","ExpectedCTR","Position","QS","SearchIS")
-#
-#
+
+
 #searchQueryPerformanceQuery <- statement(select=c("Query","Clicks","Impressions","Conversions","Cost"),
 #                         report="SEARCH_QUERY_PERFORMANCE_REPORT",
 #                         start=ninetyDaysAgo,
 #                         end=yesterday)
 #
 #searchQueryPerformance <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=searchQueryPerformanceQuery)
-#
-#
+
+
 #finalUrlPerformanceQuery <- statement(select=c('EffectiveFinalUrl'),
 #                         report="FINAL_URL_REPORT",
 #                         where="Impressions > 0",
@@ -106,8 +93,8 @@ aYearAgo <- today() - days(365)
 #                         end=yesterday)
 #
 #finalUrlPerformance <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=finalUrlPerformanceQuery)
-#
-#
+
+
 #adPerformanceQuery <- statement(select=c('CampaignName','AdGroupName','Id','Description','HeadlinePart2','CriterionId',
 #                                   'Cost',"Conversions","CostPerConversion"),
 #                         report="AD_PERFORMANCE_REPORT",
@@ -118,8 +105,8 @@ aYearAgo <- today() - days(365)
 #adPerformance <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=adPerformanceQuery)
 #names(adPerformance) <- c("Campaign", "AdGroup", "AdId", "Description", "Headline2", "KeywordId",
 #                         "Cost", "Conversions", "CPA")
-#
-#
+
+
 #geoPerformanceQuery <- statement(select=c("CountryCriteriaId","RegionCriteriaId","Cost","Conversions","AverageCpc", "CostPerConversion"),
 #                         report="GEO_PERFORMANCE_REPORT",
 #                         start=ninetyDaysAgo,
@@ -130,7 +117,7 @@ aYearAgo <- today() - days(365)
 ```
 # Campaign performance {.tabset}
 
-```{r campaign scatterplots, echo=FALSE, results="asis", eval=FALSE}
+```{r campaign scatterplots, echo=FALSE, results="asis", eval=FALS}
 
 cat("\n\n## Month-to-date\n")
 campaignPerformanceMtd <- campaignPerformance %>% filter(Date >= startOfCurrentMonth) %>% group_by(Campaign) %>%
@@ -173,6 +160,8 @@ plot_ly(data = campaignPerformance90, x = ~Cost, y = ~CPA, size = ~Conversions,
 # Metrics correlation plot
 
 ```{r correlation plot, echo=FALSE, warning=FALSE, eval=FALSE}
+
+library(corrplot)
 
 correlationData <- accountPerformance %>% group_by(Date) %>%
     summarise(Clicks = sum(Clicks), Conversions = sum(Conversions),
@@ -223,6 +212,9 @@ ggplot(accountPerformanceHeatmaps, aes(x=HourOfDay, y=DayOfWeek, z=CPA)) + geom_
 # Search Terms N-Grams {.tabset}
 
 ```{r tidy search terms, echo=FALSE, message=FALSE, eval=FALSE}
+
+library(tidytext)
+library(cowplot)
 
 data(stop_words)
 
@@ -494,6 +486,8 @@ longAccountPerformanceDevice %>% ggplot(aes(x = Date, y = value, color = Device)
 
 ```{r 404 checker, echo=FALSE, results="asis", eval=FALSE}
 
+library(httr)
+
 responseCodes <- character()
 
 for(i in finalUrlPerformance$FinalURL){
@@ -600,6 +594,8 @@ plot_ly(data = clickless, x = ~log(Impressions), y = ~QS, color = ~Position, siz
 
 ```{r anomaly detection, echo=FALSE, results="asis", eval=FALSE}
 
+library(AnomalyDetection)
+
 anomalyData <- accountPerformance %>% filter(Date >= ninetyDaysAgo) %>%
     mutate(DateTime = ymd_hms(paste0(Date," ",HourOfDay,":00:00")),
                                              ImpIS = Impressions * SearchIS, ImpPosition = Impressions * Position) %>%
@@ -649,6 +645,8 @@ anomPosition$plot
 
 ```{r google trends, echo=FALSE, eval=FALSE}
 
+library(gtrendsR)
+
 googleTrends <- keywordPerformance %>% mutate(ImpIS = Impressions * SearchIS)  %>% group_by(Keyword) %>%
     summarise(Impressions = sum(Impressions), ImpIS = sum(ImpIS)) %>%
     ungroup() %>%
@@ -666,6 +664,8 @@ plot(res)
 
 ```{r treemaps, echo=FALSE, eval=FALSE}
 
+library(treemap)
+
 campaignPerformance90[!is.finite(campaignPerformance90$CPA),"CPA"] <- 0
 
 treemap(campaignPerformance90, 
@@ -680,6 +680,10 @@ treemap(campaignPerformance90,
 # Geoperformance {.tabset}
 
 ```{r geoperformance, echo=FALSE, message=FALSE, warning=FALSE, results="asis", eval=FALSE}
+
+library(tmap)
+library(sp)
+library(rgdal)
 
 counties <- readOGR("misc","Census2011_Admin_Counties_generalised20m", verbose=FALSE)
 
