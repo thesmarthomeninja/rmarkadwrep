@@ -42,16 +42,15 @@ aYearAgo <- today() - days(365)
 
 ```
 
-```{r data grabs, warning=FALSE, echo=FALSE, eval=FALSE}
+```{r data grabs, warning=FALSE, echo=FALSE, eval=TRUE}
 
-#campaignPerformanceQuery <- statement(select=c("Date","CampaignName","Conversions","Cost"),
+#campaignPerformanceQuery <- statement(select=c("Date","CampaignName","Conversions","Cost","Clicks"),
 #                         report="CAMPAIGN_PERFORMANCE_REPORT",
 #                         start=ninetyDaysAgo,
 #                         end=yesterday)
 #
 #campaignPerformance <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=campaignPerformanceQuery)
-#names(campaignPerformance) <- c("Date","Campaign", "Conversions", "Cost")
-
+#names(campaignPerformance) <- c("Date","Campaign", "Conversions", "Cost", "Clicks")
 
 #accountPerformanceQuery <- statement(select=c("Date","DayOfWeek","HourOfDay","Device","Clicks","Impressions",
 #                                         "Conversions","Cost", "SearchImpressionShare", "AveragePosition",
@@ -96,7 +95,7 @@ aYearAgo <- today() - days(365)
 
 
 #adPerformanceQuery <- statement(select=c('CampaignName','AdGroupName','Id','Description','HeadlinePart2','CriterionId',
-#                                   'Cost',"Conversions","CostPerConversion"),
+#                                   'Cost','Conversions','CostPerConversion','Clicks'),
 #                         report="AD_PERFORMANCE_REPORT",
 #                         where="Cost > 100000000 AND AdNetworkType1 = SEARCH",
 #                         start=ninetyDaysAgo,
@@ -104,7 +103,7 @@ aYearAgo <- today() - days(365)
 #
 #adPerformance <- getData(clientCustomerId=customerId, google_auth=googleAuth, statement=adPerformanceQuery)
 #names(adPerformance) <- c("Campaign", "AdGroup", "AdId", "Description", "Headline2", "KeywordId",
-#                         "Cost", "Conversions", "CPA")
+#                         "Cost", "Conversions", "CPA","Clicks")
 
 
 #geoPerformanceQuery <- statement(select=c("CountryCriteriaId","RegionCriteriaId","Cost","Conversions","AverageCpc", "CostPerConversion"),
@@ -117,42 +116,46 @@ aYearAgo <- today() - days(365)
 ```
 # Campaign performance {.tabset}
 
-```{r campaign scatterplots, echo=FALSE, results="asis", eval=FALS}
+```{r campaign scatterplots, echo=FALSE, results="asis", eval=FALSE}
 
 cat("\n\n## Month-to-date\n")
 campaignPerformanceMtd <- campaignPerformance %>% filter(Date >= startOfCurrentMonth) %>% group_by(Campaign) %>%
-    summarize(Cost = sum(Cost), Conversions = sum(Conversions), CPA = sum(Cost)/sum(Conversions))
+    summarize(Cost = sum(Cost), Conversions = sum(Conversions), CPA = sum(Cost)/sum(Conversions), Clicks = sum(Clicks),
+              ConversionRate = sum(Conversions)/sum(Clicks))
 
-plot_ly(data = campaignPerformanceMtd, x = ~Cost, y = ~CPA, size = ~Conversions,
+plot_ly(data = campaignPerformanceMtd, x = ~ConversionRate, y = ~CPA, size = ~Conversions,
         text = ~paste("Campaign: ", Campaign, "<br>Cost: ", Cost, "<br>Conversions: ",
-                      Conversions, "<br>CPA: ", CPA),
+                      Conversions, "<br>CPA: ", CPA, "<br>ConversionRate", ConversionRate),
         type = "scatter", mode = "markers")
 
 cat("\n\n## Last 30 days\n")
 campaignPerformance30 <- campaignPerformance %>% filter(Date >= thirtyDaysAgo) %>% group_by(Campaign) %>%
-    summarize(Cost = sum(Cost), Conversions = sum(Conversions), CPA = sum(Cost)/sum(Conversions))
+    summarize(Cost = sum(Cost), Conversions = sum(Conversions), CPA = sum(Cost)/sum(Conversions), Clicks = sum(Clicks),
+              ConversionRate = sum(Conversions)/sum(Clicks))
 
-plot_ly(data = campaignPerformance30, x = ~Cost, y = ~CPA, size = ~Conversions,
+plot_ly(data = campaignPerformance30, x = ~ConversionRate, y = ~CPA, size = ~Conversions,
         text = ~paste("Campaign: ", Campaign, "<br>Cost: ", Cost, "<br>Conversions: ",
-                      Conversions, "<br>CPA: ", CPA),
+                      Conversions, "<br>CPA: ", CPA, "<br>ConversionRate", ConversionRate),
         type = "scatter", mode = "markers")
 
 cat("\n\n## Last 60 days\n")
 campaignPerformance60 <- campaignPerformance %>% filter(Date >= sixtyDaysAgo) %>% group_by(Campaign) %>%
-    summarize(Cost = sum(Cost), Conversions = sum(Conversions), CPA = sum(Cost)/sum(Conversions))
+    summarize(Cost = sum(Cost), Conversions = sum(Conversions), CPA = sum(Cost)/sum(Conversions), Clicks = sum(Clicks),
+              ConversionRate = sum(Conversions)/sum(Clicks))
 
-plot_ly(data = campaignPerformance60, x = ~Cost, y = ~CPA, size = ~Conversions,
+plot_ly(data = campaignPerformance60, x = ~ConversionRate, y = ~CPA, size = ~Conversions,
         text = ~paste("Campaign: ", Campaign, "<br>Cost: ", Cost, "<br>Conversions: ",
-                      Conversions, "<br>CPA: ", CPA),
+                      Conversions, "<br>CPA: ", CPA, "<br>ConversionRate", ConversionRate),
         type = "scatter", mode = "markers")
 
 cat("\n\n## Last 90 days\n")
 campaignPerformance90 <- campaignPerformance %>% filter(Date >= ninetyDaysAgo) %>% group_by(Campaign) %>%
-    summarize(Cost = sum(Cost), Conversions = sum(Conversions), CPA = sum(Cost)/sum(Conversions))
+    summarize(Cost = sum(Cost), Conversions = sum(Conversions), CPA = sum(Cost)/sum(Conversions), Clicks = sum(Clicks),
+              ConversionRate = sum(Conversions)/sum(Clicks))
 
-plot_ly(data = campaignPerformance90, x = ~Cost, y = ~CPA, size = ~Conversions,
+plot_ly(data = campaignPerformance90, x = ~ConversionRate, y = ~CPA, size = ~Conversions,
         text = ~paste("Campaign: ", Campaign, "<br>Cost: ", Cost, "<br>Conversions: ",
-                      Conversions, "<br>CPA: ", CPA),
+                      Conversions, "<br>CPA: ", CPA, "<br>ConversionRate", ConversionRate),
         type = "scatter", mode = "markers")
 
 ```
@@ -552,7 +555,9 @@ ggplot(matchTypePerformanceLong, aes(y = value, x = Date, color = MatchType)) +
 
 ```{r adKeywords performance, echo=FALSE, message = FALSE, eval=FALSE}
 
-plot_ly(data = adPerformance, x = ~Cost, y = ~CPA, size = ~Conversions,
+adPerformance <- adPerformance %>% mutate(ConversionRate = Conversions/Clicks)
+
+plot_ly(data = adPerformance, x = ~ConversionRate, y = ~CPA, size = ~Conversions,
             text = ~paste("Campaign: ", Campaign, "<br>AdGroup: ", AdGroup, "<br>Headline2: ",
                             Headline2, "<br>Description: ", Description ,"<br>KeywordId: ", KeywordId))
 
@@ -570,21 +575,21 @@ performanceSegments <- keywordPerformance %>% mutate(ImpQS = Impressions * as.nu
 cat("\n\n## Converters\n")
 hasConversions <- performanceSegments %>% filter(Conversions > 0)
 
-plot_ly(data = hasConversions, x = ~log(Conversions), y = ~CPA, color = ~Position, size = ~Position,
+plot_ly(data = hasConversions, x = ~Position, y = ~CPA, size = ~Conversions,
         text = ~paste("Keyword: ", Keyword, "<br>Conversions: ", Conversions,
                       "<br>CPA: ", CPA, "<br>Position: ", Position))
 
 cat("\n\n## Non-converters\n")
 notConverting <- performanceSegments %>% filter(Conversions == 0, Cost > 0)
 
-plot_ly(data = notConverting, x = ~log(Cost), y = ~CPC, color = ~Position, size = ~Position,
+plot_ly(data = notConverting, x = ~Position, y = ~CPC, size = ~Cost,
         text = ~paste("Keyword: ", Keyword, "<br>Cost: ", Cost,
                       "<br>CPC: ", CPC, "<br>Position: ", Position))
 
 cat("\n\n## Clickless\n")
 clickless <- performanceSegments %>% filter(Cost == 0, Impressions > 0)
 
-plot_ly(data = clickless, x = ~log(Impressions), y = ~QS, color = ~Position, size = ~Position, type = 'scatter',
+plot_ly(data = clickless, x = ~Position, y = ~QS, size = ~Impressions, type = 'scatter',
         text = ~paste("Keyword: ", Keyword, "<br>Impressions: ", Impressions,
                       "<br>QS: ", QS, "<br>Position: ", Position))
 
