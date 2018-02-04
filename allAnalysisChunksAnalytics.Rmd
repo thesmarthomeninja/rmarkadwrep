@@ -1,0 +1,172 @@
+---
+title: '[CLIENT NAME] Analytics Performance'
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float:
+      collapse: true
+      smooth_scroll: false
+    fig_width: 8
+    fig_height: 7
+    fig_align: "center"
+    df_print: tibble
+    theme: sandstone
+---
+
+```{r setup, include=FALSE}
+
+# Libraries
+library(googleAnalyticsR)
+library(lubridate)
+library(ggplot2)
+library(tidyverse)
+library(plotly)
+library(rmarkdown)
+library(knitr)
+
+# Variables
+clientId <- Sys.getenv("APICLIENTID")
+clientSecret <- Sys.getenv("APICLIENTSECRET")
+options(googleAuthR.client_id = clientId)
+options(googleAuthR.client_secret = clientSecret)
+options(googleAuthR.scopes.selected = "https://www.googleapis.com/auth/analytics")
+ga_auth()
+viewId <- Sys.getenv("CLIENT1VIEWID")
+
+# Dates
+yesterday = today() - days(1)
+startOfCurrentMonth = today() - day(today()) + 1
+endOfLastMonth = startOfCurrentMonth - 1 
+starOfLastMonth = endOfLastMonth - days_in_month(endOfLastMonth) + 1
+thirtyDaysAgo <- today() - days(30)
+sixtyDaysAgo <- today() - days(60)
+ninetyDaysAgo <- today() - days(90)
+aYearAgo <- today() - days(365)
+
+```
+
+# Overview of yesterday's metrics
+
+```{r yesterday overview, message=FALSE, echo=FALSE, eval=FALSE}
+
+yesterdayOverview <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
+                   metrics = c('sessions','users','sessionsPerUser','pageviewsPerSession','avgSessionDuration',
+                               'bounceRate','transactions','transactionRevenue','revenuePerTransaction','transactionsPerSession'),
+                   dimensions = 'date')
+
+names(yesterdayOverview) <- c('Date','Sessions','Users','SessionsPerUser','PagesPerSession',
+                              'AvgSessionDuratio','BounceRate','Transactions','Revenue','AvgOrderValue','ConversionRate')
+
+longYesterdayOverview <- yesterdayOverview %>% gather(metric, value, Sessions:ConversionRate)
+
+ggplot(longYesterdayOverview, aes(x = Date, y = value)) +
+    geom_line() +
+    facet_grid(metric~., scales = "free_y")
+
+```
+
+# New vs Returning
+
+```{r new vs returning, message=FALSE, echo=FALSE, eval=FALSE}
+
+newVsReturning <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
+                   metrics = 'users',
+                   dimensions = c('date','userType'))
+
+names(newVsReturning) <- c('Date','userType','Users')
+
+ggplot(newVsReturning) +
+    geom_area(aes(x = Date, y = Users, fill = userType), position = "stack") +
+    theme(legend.position = "bottom")
+
+```
+
+# Hostnames
+
+```{r hostnames, message=FALSE, echo=FALSE, eval=FALSE}
+
+hostnames <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
+                   metrics = 'sessions',
+                   dimensions = 'hostname')
+
+kable(hostnames %>% arrange(desc(sessions)))
+
+```
+
+# Device Category
+
+```{r device category, message=FALSE, echo=FALSE, eval=FALSE}
+
+deviceCategory <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
+                   metrics = 'sessions',
+                   dimensions = c('date','deviceCategory'))
+
+names(deviceCategory) <- c('Date','deviceCategory','Sessions')
+
+ggplot(deviceCategory) +
+    geom_area(aes(x = Date, y = Sessions, fill = deviceCategory), position = "stack") +
+    theme(legend.position = "bottom")
+
+```
+
+# Channel Performance
+
+```{r channel performance, echo=FALSE, message=FALSE, eval=FALSE}
+
+channelPerformance <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
+                   metrics = c('transactionRevenue','revenuePerTransaction','transactionsPerSession'),
+                   dimensions = 'channelGrouping')
+
+plot_ly(data = channelPerformance, x = ~transactionsPerSession, y = ~revenuePerTransaction, size = ~transactionRevenue,
+        text = ~paste("Channel: ", channelGrouping, "<br>Revenue: ", transactionRevenue,
+                      "<br>AvgOrderValue: ", revenuePerTransaction, "<br>ConversionRate: ", transactionsPerSession))
+
+```
+
+# Pages Performance
+
+```{r pages performance, echo=FALSE, message=FALSE, eval=FALSE}
+
+pagesPerformance <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
+                   metrics = c('pageviews','avgTimeOnPage','pageValue'),
+                   dimensions = 'pagePath')
+
+plot_ly(data = pagesPerformance, x = ~log(avgTimeOnPage), y = ~log(pageValue), size = ~pageviews,
+        text = ~paste("Page: ", pagePath, "<br>Pageviews: ", pageviews,
+                      "<br>AvgTimeOnPage: ", avgTimeOnPage, "<br>PageValue: ", pageValue))
+
+```
+
+# Landing Pages Performance
+
+```{r landing pages performance, echo=FALSE, message=FALSE, eval=FALSE}
+
+landingPagesPerformance <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
+                   metrics = c('sessions','avgSessionDuration','transactionsPerSession'),
+                   dimensions = 'landingPagePath')
+
+plot_ly(data = landingPagesPerformance, x = ~log(avgSessionDuration), y = ~log(transactionsPerSession), size = ~sessions,
+        text = ~paste("LandingPage: ", landingPagePath, "<br>Sessions: ", sessions,
+                      "<br>AvgSessionDuration: ", avgSessionDuration, "<br>ConversionRate: ", transactionsPerSession))
+
+```
+
+# E-commerce Performance
+
+```{r ecommerce performance, echo=FALSE, message=FALSE, eval=FALSE}
+
+ecommerceOverview <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
+                                      metrics = c('transactions','transactionsPerSession','transactionRevenue',
+                                                  'revenuePerTransaction'),
+                                      dimensions = 'date')
+
+names(ecommerceOverview) <- c('Date','Transactions','ConversionRate','Revenue','AvgOrderValue')
+
+longEcommerceOverview <- ecommerceOverview %>% gather(metric, value, Transactions:AvgOrderValue)
+
+ggplot(longEcommerceOverview, aes(x = Date, y = value)) +
+    geom_line() +
+    facet_grid(metric~., scales = "free_y")
+
+```
