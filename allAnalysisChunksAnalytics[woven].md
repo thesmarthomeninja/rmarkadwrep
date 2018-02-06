@@ -46,4 +46,35 @@ output:
 
 # E-commerce Performance
 
-![plot of chunk ecommerce performance](figure/ecommerce performance-1.png)
+
+
+# Session Count
+
+
+```
+## 2018-02-06 17:22:16> Reading cache
+```
+
+```
+## 2018-02-06 17:22:16> Downloaded [359] rows from a total of [359].
+```
+
+```
+## 'data.frame':	359 obs. of  3 variables:
+##  $ sessionCount: chr  "1" "10" "100" "101" ...
+##  $ users       : num  95218 1228 10 8 8 ...
+##  $ pageviews   : num  365373 7782 104 43 67 ...
+##  - attr(*, "totals")=List of 1
+##   ..$ :List of 2
+##   .. ..$ users    : chr "168819"
+##   .. ..$ pageviews: chr "751059"
+##  - attr(*, "minimums")=List of 1
+##   ..$ :List of 2
+##   .. ..$ users    : chr "1"
+##   .. ..$ pageviews: chr "1"
+##  - attr(*, "maximums")=List of 1
+##   ..$ :List of 2
+##   .. ..$ users    : chr "95218"
+##   .. ..$ pageviews: chr "365373"
+##  - attr(*, "rowCount")= int 359
+```
