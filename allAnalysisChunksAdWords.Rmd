@@ -23,6 +23,7 @@ library(tidyverse)
 library(plotly)
 library(rmarkdown)
 library(knitr)
+library(scales)
 
 # Variables
 googleAuth <- doAuth()
