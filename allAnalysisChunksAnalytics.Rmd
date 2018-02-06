@@ -202,9 +202,8 @@ sessionCountGrouped <- sessionCount %>% group_by(bucket) %>% summarize(Users = s
 
 sessionCountGrouped$bucket <- factor(sessionCountGrouped$bucket, levels = c('1','2','3','4','5','6','7','8','9','10 - 25','26 - 50','51 - 100','> 100'))
 
-ggplot(sessionCountGrouped, aes(x = bucket, y = value)) +
-    geom_col() +
-    facet_grid(metric~., scales='free_y') +
+ggplot(sessionCountGrouped, aes(x = bucket, y = value, fill = metric)) +
+    geom_col(position='dodge') +
     scale_y_continuous(labels=comma) +
     coord_flip() 
 
@@ -243,9 +242,41 @@ daysSinceLastSessionGrouped <- daysSinceLastSession %>% group_by(bucket) %>%
 daysSinceLastSessionGrouped$bucket <- factor(daysSinceLastSessionGrouped$bucket,
                                              levels = c('0','1','2','3','4','5','6','7','8','9','10 - 25','26 - 50','51 - 100','> 100'))
 
-ggplot(daysSinceLastSessionGrouped, aes(x = bucket, y = value)) +
-    geom_col() +
-    facet_grid(metric~., scales='free_y') +
+ggplot(daysSinceLastSessionGrouped, aes(x = bucket, y = value, fill = metric)) +
+    geom_col(position='dodge') +
+    scale_y_continuous(labels=comma) +
+    coord_flip() 
+
+```
+
+# Session Duration
+
+```{r session duration, echo=FALSE, message=FALSE, eval=FALSE}
+
+sessionDuration <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
+                                 metrics = c('users','pageviews','sessions'),
+                                 dimensions = 'sessionDurationBucket')
+
+sessionDuration$sessionDurationBucket <- as.numeric(sessionDuration$sessionDurationBucket)
+sessionDuration$bucket <- NA
+
+sessionDuration[sessionDuration$sessionDurationBucket < 11,"bucket"] <- '0 - 10' 
+sessionDuration[sessionDuration$sessionDurationBucket > 10 & sessionDuration$sessionDurationBucket < 31,"bucket"] <- '11 - 30' 
+sessionDuration[sessionDuration$sessionDurationBucket > 30 & sessionDuration$sessionDurationBucket < 61,"bucket"] <- '31 - 60' 
+sessionDuration[sessionDuration$sessionDurationBucket > 60 & sessionDuration$sessionDurationBucket < 181,"bucket"] <- '61 - 180' 
+sessionDuration[sessionDuration$sessionDurationBucket > 180 & sessionDuration$sessionDurationBucket < 601,"bucket"] <- '181 - 600' 
+sessionDuration[sessionDuration$sessionDurationBucket > 600 & sessionDuration$sessionDurationBucket < 1801,"bucket"] <- '601 - 1800' 
+sessionDuration[sessionDuration$sessionDurationBucket > 1800,"bucket"] <- '> 1800' 
+
+sessionDurationGrouped <- sessionDuration %>% group_by(bucket) %>%
+    summarize(Users = sum(users), Pageviews = sum(pageviews), Sessions = sum(sessions)) %>%
+    gather(metric, value, Users:Sessions)
+
+sessionDurationGrouped$bucket <- factor(sessionDurationGrouped$bucket,
+                                             levels = c('0 - 10','11 - 30','31 - 60','61 - 180','181 - 600','601 - 1800','> 1800'))
+
+ggplot(sessionDurationGrouped, aes(x = bucket, y = value, fill = metric)) +
+    geom_col(position='dodge') +
     scale_y_continuous(labels=comma) +
     coord_flip() 
 
