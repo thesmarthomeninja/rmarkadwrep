@@ -281,3 +281,53 @@ ggplot(sessionDurationGrouped, aes(x = bucket, y = value, fill = metric)) +
     coord_flip() 
 
 ```
+
+# Page Depth
+
+```{r page depth, echo=FALSE, message=FALSE, eval=FALSE}
+
+pageDepth <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
+                                 metrics = c('users','pageviews','sessions'),
+                                 dimensions = 'pageDepth')
+
+pageDepth$pageDepth <- as.numeric(pageDepth$pageDepth)
+pageDepth$bucket <- NA
+
+pageDepth[pageDepth$pageDepth == 0,"bucket"] <- '0' 
+pageDepth[pageDepth$pageDepth == 1,"bucket"] <- '1' 
+pageDepth[pageDepth$pageDepth == 2,"bucket"] <- '2' 
+pageDepth[pageDepth$pageDepth == 3,"bucket"] <- '3' 
+pageDepth[pageDepth$pageDepth == 4,"bucket"] <- '4' 
+pageDepth[pageDepth$pageDepth == 5,"bucket"] <- '5' 
+pageDepth[pageDepth$pageDepth == 6,"bucket"] <- '6' 
+pageDepth[pageDepth$pageDepth == 7,"bucket"] <- '7' 
+pageDepth[pageDepth$pageDepth == 8,"bucket"] <- '8' 
+pageDepth[pageDepth$pageDepth == 9,"bucket"] <- '9' 
+pageDepth[pageDepth$pageDepth == 10,"bucket"] <- '10' 
+pageDepth[pageDepth$pageDepth == 11,"bucket"] <- '11' 
+pageDepth[pageDepth$pageDepth == 12,"bucket"] <- '12' 
+pageDepth[pageDepth$pageDepth == 13,"bucket"] <- '13' 
+pageDepth[pageDepth$pageDepth == 14,"bucket"] <- '14' 
+pageDepth[pageDepth$pageDepth == 15,"bucket"] <- '15' 
+pageDepth[pageDepth$pageDepth == 16,"bucket"] <- '16' 
+pageDepth[pageDepth$pageDepth == 17,"bucket"] <- '17' 
+pageDepth[pageDepth$pageDepth == 18,"bucket"] <- '18' 
+pageDepth[pageDepth$pageDepth == 19,"bucket"] <- '19' 
+pageDepth[pageDepth$pageDepth == 20,"bucket"] <- '20' 
+pageDepth[pageDepth$pageDepth > 20,"bucket"] <- '> 20' 
+
+pageDepthGrouped <- pageDepth %>% group_by(bucket) %>%
+    summarize(Users = sum(users), Pageviews = sum(pageviews), Sessions = sum(sessions)) %>%
+    gather(metric, value, Users:Sessions)
+
+pageDepthGrouped$bucket <- factor(pageDepthGrouped$bucket,
+                                  levels = c('0','1', '2', '3', '4', '5', '6', '7', '8', '9', '10',
+                                             '11', '12', '13', '14', '15', '16', '17', '18', '19', '20','> 20'))
+
+ggplot(pageDepthGrouped, aes(x = bucket, y = value, fill = metric)) +
+    geom_col(position='dodge') +
+    scale_y_continuous(labels=comma) +
+    coord_flip() 
+
+```
+
