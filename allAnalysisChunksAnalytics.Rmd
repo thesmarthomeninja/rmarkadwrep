@@ -209,3 +209,44 @@ ggplot(sessionCountGrouped, aes(x = bucket, y = value)) +
     coord_flip() 
 
 ```
+
+# Days Since Last Session
+
+```{r days since last session, echo=FALSE, message=FALSE, eval=FALSE}
+
+daysSinceLastSession <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
+                                 metrics = c('users','pageviews','sessions'),
+                                 dimensions = 'daysSinceLastSession')
+
+daysSinceLastSession$daysSinceLastSession <- as.numeric(daysSinceLastSession$daysSinceLastSession)
+daysSinceLastSession$bucket <- NA
+
+daysSinceLastSession[daysSinceLastSession$daysSinceLastSession == 0,"bucket"] <- '0'
+daysSinceLastSession[daysSinceLastSession$daysSinceLastSession == 1,"bucket"] <- '1'
+daysSinceLastSession[daysSinceLastSession$daysSinceLastSession == 2,"bucket"] <- '2'
+daysSinceLastSession[daysSinceLastSession$daysSinceLastSession == 3,"bucket"] <- '3'
+daysSinceLastSession[daysSinceLastSession$daysSinceLastSession == 4,"bucket"] <- '4'
+daysSinceLastSession[daysSinceLastSession$daysSinceLastSession == 5,"bucket"] <- '5'
+daysSinceLastSession[daysSinceLastSession$daysSinceLastSession == 6,"bucket"] <- '6'
+daysSinceLastSession[daysSinceLastSession$daysSinceLastSession == 7,"bucket"] <- '7'
+daysSinceLastSession[daysSinceLastSession$daysSinceLastSession == 8,"bucket"] <- '8'
+daysSinceLastSession[daysSinceLastSession$daysSinceLastSession == 9,"bucket"] <- '9'
+daysSinceLastSession[daysSinceLastSession$daysSinceLastSession > 9 & daysSinceLastSession$daysSinceLastSession < 26,"bucket"] <- '10 - 25' 
+daysSinceLastSession[daysSinceLastSession$daysSinceLastSession > 25 & daysSinceLastSession$daysSinceLastSession < 51,"bucket"] <- '26 - 50' 
+daysSinceLastSession[daysSinceLastSession$daysSinceLastSession > 50 & daysSinceLastSession$daysSinceLastSession < 101,"bucket"] <- '51 - 100' 
+daysSinceLastSession[daysSinceLastSession$daysSinceLastSession > 100,"bucket"] <- '> 100' 
+
+daysSinceLastSessionGrouped <- daysSinceLastSession %>% group_by(bucket) %>%
+    summarize(Users = sum(users), Pageviews = sum(pageviews), Sessions = sum(sessions)) %>%
+    gather(metric, value, Users:Sessions)
+
+daysSinceLastSessionGrouped$bucket <- factor(daysSinceLastSessionGrouped$bucket,
+                                             levels = c('0','1','2','3','4','5','6','7','8','9','10 - 25','26 - 50','51 - 100','> 100'))
+
+ggplot(daysSinceLastSessionGrouped, aes(x = bucket, y = value)) +
+    geom_col() +
+    facet_grid(metric~., scales='free_y') +
+    scale_y_continuous(labels=comma) +
+    coord_flip() 
+
+```
