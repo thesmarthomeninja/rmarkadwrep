@@ -64,3 +64,33 @@ output:
 
 
 
+# Correlation plot
+
+
+```
+## corrplot 0.84 loaded
+```
+
+```
+## Auto-refreshing stale OAuth token.
+```
+
+```
+## 2018-02-07 22:21:26> Downloaded [365] rows from a total of [365].
+```
+
+```
+## Error in names(yesterdayOverview) <- c("Date", "Sessions", "Users", "SessionsPerUser", : object 'yesterdayOverview' not found
+```
+
+```
+## Error in eval(lhs, parent, parent): object 'accountPerformance' not found
+```
+
+```
+## Error in cor(correlationData): 'x' must be numeric
+```
+
+```
+## Error in corrplot(corr, method = "pie", type = "upper"): object 'corr' not found
+```

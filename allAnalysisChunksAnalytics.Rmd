@@ -331,3 +331,23 @@ ggplot(pageDepthGrouped, aes(x = bucket, y = value, fill = metric)) +
 
 ```
 
+# Correlation plot
+
+```{r correlation plot, echo=FALSE, message=FALSE, eval=FALSE}
+
+library(corrplot)
+
+correlationData <- google_analytics(viewId, date_range = c(aYearAgo, yesterday), 
+                   metrics = c('sessions','users','sessionsPerUser','pageviewsPerSession','avgSessionDuration',
+                               'bounceRate','transactions','transactionRevenue','revenuePerTransaction','transactionsPerSession'),
+                   dimensions = 'date')
+
+names(correlationData) <- c('Date','Sessions','Users','SessionsPerUser','PagesPerSession',
+                              'AvgSessionDuration','BounceRate','Transactions','Revenue','AvgOrderValue','ConversionRate')
+
+corr <- cor(correlationData[,-1])
+
+corrplot(corr, method = "pie", type = "upper")
+
+
+```
