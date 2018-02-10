@@ -67,30 +67,24 @@ output:
 # Correlation plot
 
 
-```
-## corrplot 0.84 loaded
-```
 
-```
-## Auto-refreshing stale OAuth token.
-```
+# City performance {.tabset}
 
-```
-## 2018-02-07 22:21:26> Downloaded [365] rows from a total of [365].
-```
 
-```
-## Error in names(yesterdayOverview) <- c("Date", "Sessions", "Users", "SessionsPerUser", : object 'yesterdayOverview' not found
-```
+# Pageviews
+![plot of chunk city performance](figure/city performance-1.png)
 
-```
-## Error in eval(lhs, parent, parent): object 'accountPerformance' not found
-```
+# Sessions
+![plot of chunk city performance](figure/city performance-2.png)
 
-```
-## Error in cor(correlationData): 'x' must be numeric
-```
+# Bounce Rate
+![plot of chunk city performance](figure/city performance-3.png)
 
-```
-## Error in corrplot(corr, method = "pie", type = "upper"): object 'corr' not found
-```
+# Pages/Session
+![plot of chunk city performance](figure/city performance-4.png)
+
+# Revenue
+![plot of chunk city performance](figure/city performance-5.png)
+
+# Conversion Rate
+![plot of chunk city performance](figure/city performance-6.png)

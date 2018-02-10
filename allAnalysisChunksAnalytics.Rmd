@@ -351,3 +351,56 @@ corrplot(corr, method = "pie", type = "upper")
 
 
 ```
+
+# City performance {.tabset}
+
+```{r city performance, echo=FALSE, message=FALSE, warning=FALSE, results='asis', eval=FALSE}
+
+library(ggmap)
+
+cityPerformance <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday),
+                   metrics = c('pageviews','sessions','bounceRate','pageviewsPerSession','transactionRevenue','transactionsPerSession'),
+                   dimensions = c('city','longitude','latitude'))
+
+cityPerformance$latitude <- as.numeric(cityPerformance$latitude)
+cityPerformance$longitude <- as.numeric(cityPerformance$longitude)
+
+ireland <- get_map('Athlone', zoom=7)
+
+cat('\n\n## Pageviews\n')
+ggmap(ireland) + geom_point(data = cityPerformance, aes(x = longitude, y = latitude, size = pageviews),
+                            color = 'blue', alpha = 0.5) +
+    theme(legend.position = "bottom") +
+    scale_size_continuous(labels=comma)
+
+cat('\n\n## Sessions\n')
+ggmap(ireland) + geom_point(data = cityPerformance, aes(x = longitude, y = latitude, size = sessions),
+                            color = 'blue', alpha = 0.5) +
+    theme(legend.position = "bottom") +
+    scale_size_continuous(labels=comma)
+
+cat('\n\n## Bounce Rate\n')
+ggmap(ireland) + geom_point(data = cityPerformance, aes(x = longitude, y = latitude, size = bounceRate),
+                            color = 'blue', alpha = 0.5) +
+    theme(legend.position = "bottom") +
+    scale_size_continuous(labels=comma)
+
+cat('\n\n## Pages/Session\n')
+ggmap(ireland) + geom_point(data = cityPerformance, aes(x = longitude, y = latitude, size = pageviewsPerSession),
+                            color = 'blue', alpha = 0.5) +
+    theme(legend.position = "bottom") +
+    scale_size_continuous(labels=comma)
+
+cat('\n\n## Revenue\n')
+ggmap(ireland) + geom_point(data = cityPerformance, aes(x = longitude, y = latitude, size = transactionRevenue),
+                            color = 'blue', alpha = 0.5) +
+    theme(legend.position = "bottom") +
+    scale_size_continuous(labels=comma)
+
+cat('\n\n## Conversion Rate\n')
+ggmap(ireland) + geom_point(data = cityPerformance, aes(x = longitude, y = latitude, size = transactionsPerSession),
+                            color = 'blue', alpha = 0.5) +
+    theme(legend.position = "bottom") +
+    scale_size_continuous(labels=comma)
+
+```
