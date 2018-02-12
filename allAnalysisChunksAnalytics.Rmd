@@ -404,3 +404,19 @@ ggmap(ireland) + geom_point(data = cityPerformance, aes(x = longitude, y = latit
     scale_size_continuous(labels=comma)
 
 ```
+
+# Events {.tabset}
+
+```{r event performance, echo=FALSE, results='asis', message=FALSE, eval=FALSE}
+
+eventPerformance <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday),
+                   metrics = c('totalEvents','sessionsWithEvent'),
+                   dimensions = c('date','eventCategory'))
+
+cat('\n\n## Total Events\n')
+ggplot(eventPerformance, aes(x = date, y = totalEvents, color = eventCategory)) + geom_line()
+
+cat('\n\n## Sessions With Events\n')
+ggplot(eventPerformance, aes(x = date, y = sessionsWithEvent, color = eventCategory)) + geom_line()
+
+```

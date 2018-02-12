@@ -71,20 +71,7 @@ output:
 # City performance {.tabset}
 
 
-# Pageviews
-![plot of chunk city performance](figure/city performance-1.png)
 
-# Sessions
-![plot of chunk city performance](figure/city performance-2.png)
+# Events
 
-# Bounce Rate
-![plot of chunk city performance](figure/city performance-3.png)
 
-# Pages/Session
-![plot of chunk city performance](figure/city performance-4.png)
-
-# Revenue
-![plot of chunk city performance](figure/city performance-5.png)
-
-# Conversion Rate
-![plot of chunk city performance](figure/city performance-6.png)
