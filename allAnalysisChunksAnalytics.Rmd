@@ -54,7 +54,8 @@ aYearAgo <- today() - days(365)
 yesterdayOverview <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
                    metrics = c('sessions','users','sessionsPerUser','pageviewsPerSession','avgSessionDuration',
                                'bounceRate','transactions','transactionRevenue','revenuePerTransaction','transactionsPerSession'),
-                   dimensions = 'date')
+                   dimensions = 'date',
+                   anti_sample = TRUE)
 
 names(yesterdayOverview) <- c('Date','Sessions','Users','SessionsPerUser','PagesPerSession',
                               'AvgSessionDuratio','BounceRate','Transactions','Revenue','AvgOrderValue','ConversionRate')
@@ -73,7 +74,8 @@ ggplot(longYesterdayOverview, aes(x = Date, y = value)) +
 
 newVsReturning <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
                    metrics = 'users',
-                   dimensions = c('date','userType'))
+                   dimensions = c('date','userType'),
+                   anti_sample = TRUE)
 
 names(newVsReturning) <- c('Date','userType','Users')
 
@@ -89,7 +91,8 @@ ggplot(newVsReturning) +
 
 hostnames <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
                    metrics = 'sessions',
-                   dimensions = 'hostname')
+                   dimensions = 'hostname',
+                   anti_sample = TRUE)
 
 kable(hostnames %>% arrange(desc(sessions)))
 
@@ -101,7 +104,8 @@ kable(hostnames %>% arrange(desc(sessions)))
 
 deviceCategory <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
                    metrics = 'sessions',
-                   dimensions = c('date','deviceCategory'))
+                   dimensions = c('date','deviceCategory'),
+                   anti_sample = TRUE)
 
 names(deviceCategory) <- c('Date','deviceCategory','Sessions')
 
@@ -117,7 +121,8 @@ ggplot(deviceCategory) +
 
 channelPerformance <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
                    metrics = c('transactionRevenue','revenuePerTransaction','transactionsPerSession'),
-                   dimensions = 'channelGrouping')
+                   dimensions = 'channelGrouping',
+                   anti_sample = TRUE)
 
 plot_ly(data = channelPerformance, x = ~transactionsPerSession, y = ~revenuePerTransaction, size = ~transactionRevenue,
         text = ~paste("Channel: ", channelGrouping, "<br>Revenue: ", transactionRevenue,
@@ -131,7 +136,8 @@ plot_ly(data = channelPerformance, x = ~transactionsPerSession, y = ~revenuePerT
 
 pagesPerformance <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
                    metrics = c('pageviews','avgTimeOnPage','pageValue'),
-                   dimensions = 'pagePath')
+                   dimensions = 'pagePath',
+                   anti_sample = TRUE)
 
 plot_ly(data = pagesPerformance, x = ~log(avgTimeOnPage), y = ~log(pageValue), size = ~pageviews,
         text = ~paste("Page: ", pagePath, "<br>Pageviews: ", pageviews,
@@ -145,7 +151,8 @@ plot_ly(data = pagesPerformance, x = ~log(avgTimeOnPage), y = ~log(pageValue), s
 
 landingPagesPerformance <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
                    metrics = c('sessions','avgSessionDuration','transactionsPerSession'),
-                   dimensions = 'landingPagePath')
+                   dimensions = 'landingPagePath',
+                   anti_sample = TRUE)
 
 plot_ly(data = landingPagesPerformance, x = ~log(avgSessionDuration), y = ~log(transactionsPerSession), size = ~sessions,
         text = ~paste("LandingPage: ", landingPagePath, "<br>Sessions: ", sessions,
@@ -160,7 +167,8 @@ plot_ly(data = landingPagesPerformance, x = ~log(avgSessionDuration), y = ~log(t
 ecommerceOverview <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
                                       metrics = c('transactions','transactionsPerSession','transactionRevenue',
                                                   'revenuePerTransaction'),
-                                      dimensions = 'date')
+                                      dimensions = 'date',
+                   anti_sample = TRUE)
 
 names(ecommerceOverview) <- c('Date','Transactions','ConversionRate','Revenue','AvgOrderValue')
 
@@ -178,7 +186,8 @@ ggplot(longEcommerceOverview, aes(x = Date, y = value)) +
 
 sessionCount <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
                                  metrics = c('users','pageviews'),
-                                 dimensions = 'sessionCount')
+                                 dimensions = 'sessionCount',
+                   anti_sample = TRUE)
 
 sessionCount$sessionCount <- as.numeric(sessionCount$sessionCount)
 sessionCount$bucket <- NA
@@ -215,7 +224,8 @@ ggplot(sessionCountGrouped, aes(x = bucket, y = value, fill = metric)) +
 
 daysSinceLastSession <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
                                  metrics = c('users','pageviews','sessions'),
-                                 dimensions = 'daysSinceLastSession')
+                                 dimensions = 'daysSinceLastSession',
+                   anti_sample = TRUE)
 
 daysSinceLastSession$daysSinceLastSession <- as.numeric(daysSinceLastSession$daysSinceLastSession)
 daysSinceLastSession$bucket <- NA
@@ -255,7 +265,8 @@ ggplot(daysSinceLastSessionGrouped, aes(x = bucket, y = value, fill = metric)) +
 
 sessionDuration <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
                                  metrics = c('users','pageviews','sessions'),
-                                 dimensions = 'sessionDurationBucket')
+                                 dimensions = 'sessionDurationBucket',
+                   anti_sample = TRUE)
 
 sessionDuration$sessionDurationBucket <- as.numeric(sessionDuration$sessionDurationBucket)
 sessionDuration$bucket <- NA
@@ -288,7 +299,8 @@ ggplot(sessionDurationGrouped, aes(x = bucket, y = value, fill = metric)) +
 
 pageDepth <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
                                  metrics = c('users','pageviews','sessions'),
-                                 dimensions = 'pageDepth')
+                                 dimensions = 'pageDepth',
+                   anti_sample = TRUE)
 
 pageDepth$pageDepth <- as.numeric(pageDepth$pageDepth)
 pageDepth$bucket <- NA
@@ -340,7 +352,8 @@ library(corrplot)
 correlationData <- google_analytics(viewId, date_range = c(aYearAgo, yesterday), 
                    metrics = c('sessions','users','sessionsPerUser','pageviewsPerSession','avgSessionDuration',
                                'bounceRate','transactions','transactionRevenue','revenuePerTransaction','transactionsPerSession'),
-                   dimensions = 'date')
+                   dimensions = 'date',
+                   anti_sample = TRUE)
 
 names(correlationData) <- c('Date','Sessions','Users','SessionsPerUser','PagesPerSession',
                               'AvgSessionDuration','BounceRate','Transactions','Revenue','AvgOrderValue','ConversionRate')
@@ -360,7 +373,8 @@ library(ggmap)
 
 cityPerformance <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday),
                    metrics = c('pageviews','sessions','bounceRate','pageviewsPerSession','transactionRevenue','transactionsPerSession'),
-                   dimensions = c('city','longitude','latitude'))
+                   dimensions = c('city','longitude','latitude'),
+                   anti_sample = TRUE)
 
 cityPerformance$latitude <- as.numeric(cityPerformance$latitude)
 cityPerformance$longitude <- as.numeric(cityPerformance$longitude)
@@ -411,7 +425,8 @@ ggmap(ireland) + geom_point(data = cityPerformance, aes(x = longitude, y = latit
 
 eventPerformance <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday),
                    metrics = c('totalEvents','sessionsWithEvent'),
-                   dimensions = c('date','eventCategory'))
+                   dimensions = c('date','eventCategory'),
+                   anti_sample = TRUE)
 
 cat('\n\n## Total Events\n')
 ggplot(eventPerformance, aes(x = date, y = totalEvents, color = eventCategory)) + geom_line()
@@ -427,7 +442,8 @@ ggplot(eventPerformance, aes(x = date, y = sessionsWithEvent, color = eventCateg
 
 goalPerformance <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday),
                    metrics = c('goal1Completions','goal2Completions','goal1ConversionRate','goal2ConversionRate'),
-                   dimensions = 'date')
+                   dimensions = 'date',
+                   anti_sample = TRUE)
 
 goalCompletions <- goalPerformance %>% gather(goal, completions, 2:3)
 goalConversionRate <- goalPerformance %>% gather(goal, conversionRates, 4:5)
@@ -437,5 +453,20 @@ ggplot(goalCompletions, aes(x = date, y = completions, color = goal)) + geom_lin
 
 cat('\n\n## Conversion Rates\n')
 ggplot(goalConversionRate, aes(x = date, y = conversionRates, color = goal)) + geom_line()
+
+```
+
+# Product performance
+
+```{r product performance, echo=FALSE, message=FALSE, warning=FALSE, eval=FALSE}
+
+productPerformance <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday),
+                   metrics = c('itemRevenue','revenuePerItem','itemsPerPurchase'),
+                   dimensions = c('productSku','productName'),
+                   anti_sample = TRUE)
+
+plot_ly(data = productPerformance, x = ~log(revenuePerItem), y = ~log(itemsPerPurchase), size = ~itemRevenue,
+        text = ~paste("Product: ", productName, "<br>SKU: ", productSku, "<br>Revenue: ", itemRevenue,
+                      "<br>Avg. Price: ", revenuePerItem, "<br>Avg. Quantity: ", itemsPerPurchase))
 
 ```

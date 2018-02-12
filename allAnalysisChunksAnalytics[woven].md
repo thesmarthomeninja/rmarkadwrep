@@ -79,8 +79,7 @@ output:
 # Goal performance {.tabset}
 
 
-## Completions
-![plot of chunk goal performance](figure/goal performance-1.png)
 
-## Conversion Rates
-![plot of chunk goal performance](figure/goal performance-2.png)
+# Product performance
+
+
