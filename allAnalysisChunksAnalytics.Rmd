@@ -420,3 +420,22 @@ cat('\n\n## Sessions With Events\n')
 ggplot(eventPerformance, aes(x = date, y = sessionsWithEvent, color = eventCategory)) + geom_line()
 
 ```
+
+# Goal performance {.tabset}
+
+```{r goal performance, echo=FALSE, message=FALSE, results='asis', eval=FALSE}
+
+goalPerformance <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday),
+                   metrics = c('goal1Completions','goal2Completions','goal1ConversionRate','goal2ConversionRate'),
+                   dimensions = 'date')
+
+goalCompletions <- goalPerformance %>% gather(goal, completions, 2:3)
+goalConversionRate <- goalPerformance %>% gather(goal, conversionRates, 4:5)
+
+cat('\n\n## Completions\n')
+ggplot(goalCompletions, aes(x = date, y = completions, color = goal)) + geom_line()
+
+cat('\n\n## Conversion Rates\n')
+ggplot(goalConversionRate, aes(x = date, y = conversionRates, color = goal)) + geom_line()
+
+```
