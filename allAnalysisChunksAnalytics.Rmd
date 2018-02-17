@@ -470,3 +470,45 @@ plot_ly(data = productPerformance, x = ~log(revenuePerItem), y = ~log(itemsPerPu
                       "<br>Avg. Price: ", revenuePerItem, "<br>Avg. Quantity: ", itemsPerPurchase))
 
 ```
+
+# Search terms {.tabset}
+
+```{r search terms, echo=FALSE, results='asis', message=FALSE, warning=FALSE, eval=FALSE}
+
+library(wordcloud)
+
+searchTerms <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday),
+                                metrics = c('searchUniques','avgSearchDuration','avgSearchDepth'),
+                   dimensions = c('searchKeyword','searchKeywordRefinement'),
+                   anti_sample = TRUE)
+
+set.seed(1234)
+
+cat('\n\n## Unique Searches\n')
+wordcloud(words = searchTerms$searchKeyword, freq = searchTerms$searchUniques, min.freq = 1,
+          max.words=200, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+
+wordcloud(words = searchTerms$searchKeywordRefinement, freq = searchTerms$searchUniques, min.freq = 1,
+          max.words=200, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+
+cat('\n\n## Avg Search Depth\n')
+wordcloud(words = searchTerms$searchKeyword, freq = searchTerms$avgSearchDepth, min.freq = 1,
+          max.words=200, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+
+wordcloud(words = searchTerms$searchKeywordRefinement, freq = searchTerms$avgSearchDepth, min.freq = 1,
+          max.words=200, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+
+cat('\n\n## Avg Search Duration\n')
+wordcloud(words = searchTerms$searchKeyword, freq = searchTerms$avgSearchDuration, min.freq = 1,
+          max.words=200, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+
+wordcloud(words = searchTerms$searchKeywordRefinement, freq = searchTerms$avgSearchDuration, min.freq = 1,
+          max.words=200, random.order=FALSE, rot.per=0.35, 
+          colors=brewer.pal(8, "Dark2"))
+
+```
