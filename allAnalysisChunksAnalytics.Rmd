@@ -16,6 +16,15 @@ output:
 
 ```{r setup, include=FALSE}
 
+# Variables
+clientId <- Sys.getenv("APICLIENTID")
+clientSecret <- Sys.getenv("APICLIENTSECRET")
+options(googleAuthR.client_id = clientId)
+options(googleAuthR.client_secret = clientSecret)
+options(googleAuthR.scopes.selected = "https://www.googleapis.com/auth/analytics")
+ga_auth()
+viewId <- Sys.getenv("CLIENT1VIEWID")
+
 # Libraries
 library(googleAnalyticsR)
 library(lubridate)
@@ -25,15 +34,6 @@ library(plotly)
 library(rmarkdown)
 library(knitr)
 library(scales)
-
-# Variables
-clientId <- Sys.getenv("APICLIENTID")
-clientSecret <- Sys.getenv("APICLIENTSECRET")
-options(googleAuthR.client_id = clientId)
-options(googleAuthR.client_secret = clientSecret)
-options(googleAuthR.scopes.selected = "https://www.googleapis.com/auth/analytics")
-ga_auth()
-viewId <- Sys.getenv("CLIENT1VIEWID")
 
 # Dates
 yesterday = today() - days(1)
@@ -49,7 +49,7 @@ aYearAgo <- today() - days(365)
 
 # Overview of yesterday's metrics
 
-```{r yesterday overview, message=FALSE, echo=FALSE, eval=FALSE}
+```{r yesterday overview, message=FALSE, echo=FALSE, eval=TRUE}
 
 yesterdayOverview <- google_analytics(viewId, date_range = c(thirtyDaysAgo, yesterday), 
                    metrics = c('sessions','users','sessionsPerUser','pageviewsPerSession','avgSessionDuration',
